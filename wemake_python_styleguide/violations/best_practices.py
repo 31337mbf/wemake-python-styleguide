@@ -26,6 +26,7 @@ Summary
    WrongModuleMetadataViolation
    EmptyModuleViolation
    InitModuleHasLogicViolation
+   BadMagicModuleFunctionViolation
    WrongKeywordViolation
    WrongFunctionCallViolation
    FutureImportViolation
@@ -68,6 +69,7 @@ Summary
    NegatedConditionsViolation
    NestedTryViolation
    MultilineConditionsViolation
+   MutableModuleConstantViolation
 
 Comments
 --------
@@ -83,6 +85,7 @@ Modules
 .. autoclass:: WrongModuleMetadataViolation
 .. autoclass:: EmptyModuleViolation
 .. autoclass:: InitModuleHasLogicViolation
+.. autoclass:: BadMagicModuleFunctionViolation
 
 Builtins
 --------
@@ -132,10 +135,12 @@ Design
 .. autoclass:: NegatedConditionsViolation
 .. autoclass:: NestedTryViolation
 .. autoclass:: MultilineConditionsViolation
+.. autoclass:: MutableModuleConstantViolation
 
 """
 
-from wemake_python_styleguide.types import final
+from typing_extensions import final
+
 from wemake_python_styleguide.violations.base import (
     ASTViolation,
     SimpleViolation,
@@ -369,6 +374,31 @@ class InitModuleHasLogicViolation(SimpleViolation):
 
     error_template = 'Found `__init__.py` module with logic'
     code = 412
+
+
+@final
+class BadMagicModuleFunctionViolation(ASTViolation):
+    """
+    Forbids to use ``__getaddr__`` and ``__dir__`` module magic methods.
+
+    Reasoning:
+        It does not bring any features,
+        only making it harder to understand what is going on.
+
+    Solution:
+        Refactor your code to use custom methods instead.
+
+    Configuration:
+        This rule is configurable with ``--i-control-code``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
+
+    .. versionadded:: 0.9.0
+
+    """
+
+    error_template = 'Found bad magic module function: {0}'
+    code = 413
 
 
 # Modules:
@@ -1101,7 +1131,7 @@ class StatementHasNoEffectViolation(ASTViolation):
 @final
 class MultipleAssignmentsViolation(ASTViolation):
     """
-    Forbids to have statements that do nothing.
+    Forbids to have multiple assignments on the same line.
 
     Reasoning:
         Multiple assignments on the same line might not do what you think
@@ -1131,7 +1161,7 @@ class MultipleAssignmentsViolation(ASTViolation):
 @final
 class IncorrectUnpackingViolation(ASTViolation):
     """
-    Forbids to have statements that do nothing.
+    Forbids to have tuple unpacking with side-effects.
 
     Reasoning:
         Having unpacking with side-effects is very dirty.
@@ -1379,7 +1409,7 @@ class MethodWithoutArgumentsViolation(ASTViolation):
     Forbids to have methods without any arguments.
 
     Reasoning:
-        Methods withour arguments are allowed to be defined,
+        Methods without arguments are allowed to be defined,
         but almost impossible to use.
         Furthermore, they don't have an access to ``self``,
         so can not access the inner state of the object.
@@ -1410,7 +1440,7 @@ class MethodWithoutArgumentsViolation(ASTViolation):
 @final
 class IncorrectBaseClassViolation(ASTViolation):
     """
-    Forbids to have methods without any arguments.
+    Forbids to have anything else than a class as a base class.
 
     Reasoning:
         In Python you can specify anything in the base classes slot.
@@ -1596,8 +1626,8 @@ class ComplexDefaultValuesViolation(ASTViolation):
     Forbids to use complex defaults.
 
     Anything that is not a ``ast.Name``, ``ast.Attribute``, ``ast.Str``,
-    ``ast.NameConstant``, ``ast.Tuple``, ``ast.Bytes`` or ``ast.Num`` should
-    be moved out from defaults.
+    ``ast.NameConstant``, ``ast.Tuple``, ``ast.Bytes``, ``ast.Num``
+    or ``ast.Ellipsis`` should be moved out from defaults.
 
     Reasoning:
         It can be tricky. Nothing stops you from making database calls or http
@@ -1610,10 +1640,10 @@ class ComplexDefaultValuesViolation(ASTViolation):
 
         # Correct:
         SHOULD_USE_DOCTEST = 'PYFLAKES_DOCTEST' in os.environ
-        def __init__(self, withDoctest=SHOULD_USE_DOCTEST):
+        def __init__(self, with_doctest=SHOULD_USE_DOCTEST):
 
         # Wrong:
-        def __init__(self, withDoctest='PYFLAKES_DOCTEST' in os.environ):
+        def __init__(self, with_doctest='PYFLAKES_DOCTEST' in os.environ):
 
     .. versionadded:: 0.8.0
 
@@ -1828,7 +1858,7 @@ class MultilineConditionsViolation(ASTViolation):
             node.test.op,
             ast.Not,
         ):
-        ...
+            ...
 
     .. versionadded:: 0.9.0
 
@@ -1836,3 +1866,38 @@ class MultilineConditionsViolation(ASTViolation):
 
     error_template = 'Found multiline conditions'
     code = 465
+
+
+@final
+class MutableModuleConstantViolation(ASTViolation):
+    """
+    Forbid mutable constants on a module level.
+
+    Reasoning:
+        Constants should be immutable.
+
+    Solution:
+        Use immutable types for constants.
+
+    We only treat ``ast.Set``, ``ast.Dict``, ``ast.List``, and comprehensions
+    as mutable things. All other nodes are still fine.
+
+    Example::
+
+        # Correct:
+        import types
+        CONST1 = frozenset((1, 2, 3))
+        CONST2 = (1, 2, 3)
+        CONST3 = types.MappingProxyType({'key': 'value'})
+
+        # Wrong:
+        CONST1 = {1, 2, 3}
+        CONST2 = [1, 2, 3]
+        CONST3 = {'key': 'value'}
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    error_template = 'Found mutable module constant'
+    code = 466

@@ -3,13 +3,15 @@
 import ast
 from typing import ClassVar, Dict, List, Optional, Union
 
+from typing_extensions import final
+
 from wemake_python_styleguide.constants import (
     FUNCTIONS_BLACKLIST,
     UNUSED_VARIABLE,
 )
-from wemake_python_styleguide.logics import functions
+from wemake_python_styleguide.logics import functions, nodes, operators
 from wemake_python_styleguide.logics.naming import access
-from wemake_python_styleguide.types import AnyFunctionDef, AnyNodes, final
+from wemake_python_styleguide.types import AnyFunctionDef, AnyNodes
 from wemake_python_styleguide.violations.best_practices import (
     BooleanPositionalArgumentViolation,
     ComplexDefaultValuesViolation,
@@ -57,6 +59,7 @@ class WrongFunctionCallVisitor(BaseNodeVisitor):
         parent_context = getattr(node, 'wps_context', None)
         if isinstance(parent_context, (ast.FunctionDef, ast.AsyncFunctionDef)):
             grand_context = getattr(parent_context, 'wps_context', None)
+            grand_context = nodes.get_context(parent_context)
             if isinstance(grand_context, ast.ClassDef):
                 return
         self.add_violation(
@@ -107,6 +110,7 @@ class FunctionDefinitionVisitor(BaseNodeVisitor):
         ast.Tuple,
         ast.Bytes,
         ast.Num,
+        ast.Ellipsis,
     )
 
     def _check_used_variables(
@@ -164,12 +168,10 @@ class FunctionDefinitionVisitor(BaseNodeVisitor):
         self._check_used_variables(local_variables)
 
     def _check_argument_default_values(self, node: AnyFunctionDef) -> None:
-
         for arg in node.args.defaults:
-            if not isinstance(arg, self._allowed_default_value_types):
-                self.add_violation(
-                    ComplexDefaultValuesViolation(node, text='Test text'),
-                )
+            real_arg = operators.unwrap_unary_node(arg)
+            if not isinstance(real_arg, self._allowed_default_value_types):
+                self.add_violation(ComplexDefaultValuesViolation(node))
 
     def visit_any_function(self, node: AnyFunctionDef) -> None:
         """

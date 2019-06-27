@@ -14,7 +14,7 @@ These values can be changed in the ``setup.cfg`` file on a per-project bases,
 if you find them too strict or too permissive.
 """
 
-from wemake_python_styleguide.types import Final
+from typing_extensions import Final
 
 # General:
 
@@ -62,3 +62,6 @@ MAX_BASE_CLASSES: Final = 3
 
 #: Maximum number of decorators.
 MAX_DECORATORS: Final = 5
+
+#: Maximum number of same string usage in code.
+MAX_STRING_USAGES: Final = 3

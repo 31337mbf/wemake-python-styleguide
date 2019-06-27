@@ -41,6 +41,7 @@ Summary
    TooManyElifsViolation
    TooManyForsInComprehensionViolation
    TooManyExceptCasesViolation
+   OverusedStringViolation
 
 Module complexity
 -----------------
@@ -69,12 +70,15 @@ Structures complexity
 .. autoclass:: TooManyElifsViolation
 .. autoclass:: TooManyForsInComprehensionViolation
 .. autoclass:: TooManyExceptCasesViolation
+.. autoclass:: OverusedStringViolation
 
 """
 
-from wemake_python_styleguide.types import final
+from typing_extensions import final
+
 from wemake_python_styleguide.violations.base import (
     ASTViolation,
+    MaybeASTViolation,
     SimpleViolation,
 )
 
@@ -346,6 +350,7 @@ class TooManyMethodsViolation(ASTViolation):
     code = 214
 
 
+@final
 class TooManyBaseClassesViolation(ASTViolation):
     """
     Restrict the maximum number of base classes.
@@ -392,6 +397,7 @@ class TooManyBaseClassesViolation(ASTViolation):
     code = 215
 
 
+@final
 class TooManyDecoratorsViolation(ASTViolation):
     """
     Restrict the maximum number of decorators.
@@ -599,3 +605,30 @@ class TooManyExceptCasesViolation(ASTViolation):
 
     error_template = 'Found too many `except` cases'
     code = 225
+
+
+@final
+class OverusedStringViolation(MaybeASTViolation):
+    """
+    Forbids to over-use string constants.
+
+    Reasoning:
+        When some string is used more than several time in your code,
+        it probably means that this string is a meaningful constant.
+        And should be treated like one.
+
+    Solution:
+        Deduplicate you string usages
+        by defining new functions or constants.
+
+    Configuration:
+        This rule is configurable with ``--max-string-usages``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_STRING_USAGES`
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    error_template = 'Found string constant over-use: {0}'
+    code = 226

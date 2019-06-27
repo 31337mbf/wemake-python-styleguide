@@ -9,14 +9,12 @@ from wemake_python_styleguide.visitors.ast import (
     conditions,
     exceptions,
     functions,
+    imports,
     keywords,
     loops,
+    modules,
     naming,
     statements,
-)
-from wemake_python_styleguide.visitors.ast.imports import WrongImportVisitor
-from wemake_python_styleguide.visitors.ast.modules import (
-    EmptyModuleContentsVisitor,
 )
 from wemake_python_styleguide.visitors.filenames.module import (
     WrongModuleNameVisitor,
@@ -32,6 +30,7 @@ GENERAL_PRESET = (
     keywords.WrongKeywordVisitor,
     keywords.WrongContextManagerVisitor,
     keywords.ConsistentReturningVisitor,
+    keywords.ConsistentReturningVariableVisitor,
 
     loops.WrongComprehensionVisitor,
     loops.WrongLoopVisitor,
@@ -46,7 +45,7 @@ GENERAL_PRESET = (
     exceptions.WrongTryExceptVisitor,
     exceptions.NestedTryBlocksVisitor,
 
-    WrongImportVisitor,
+    imports.WrongImportVisitor,
 
     naming.WrongNameVisitor,
     naming.WrongModuleMetadataVisitor,
@@ -71,5 +70,7 @@ GENERAL_PRESET = (
 
     # Modules:
     WrongModuleNameVisitor,
-    EmptyModuleContentsVisitor,
+    modules.EmptyModuleContentsVisitor,
+    modules.MagicModuleFunctionsVisitor,
+    modules.ModuleConstantsVisitor,
 )

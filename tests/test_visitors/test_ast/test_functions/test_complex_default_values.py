@@ -10,24 +10,16 @@ from wemake_python_styleguide.visitors.ast.functions import (
 )
 
 function_with_defaults = """
-def __init__(
-    self,
-    tree,
-    filename='(none)',
-    builtins=None,
-    withDoctest={0},
-    tokens=(),
-):
-    pass
+def function(self, with_default={0}):
+    ...
 """
-
-bad_default = "'PYFLAKES_DOCTEST' in os.environ"
-good_default = 'SHOULD_USE_DOCTEST'
 
 
 @pytest.mark.parametrize('code', [
-    function_with_defaults,
-    bad_default,
+    "'PYFLAKES_DOCTEST' in os.environ",
+    'call()',
+    'index[1]',
+    'compare == 1',
 ])
 def test_wrong_function_defaults(
     assert_errors,
@@ -38,7 +30,7 @@ def test_wrong_function_defaults(
     mode,
 ):
     """Testing that wrong function defaults are forbidden."""
-    tree = parse_ast_tree(function_with_defaults.format(bad_default))
+    tree = parse_ast_tree(function_with_defaults.format(code))
 
     visitor = FunctionDefinitionVisitor(default_options, tree=tree)
     visitor.run()
@@ -47,8 +39,14 @@ def test_wrong_function_defaults(
 
 
 @pytest.mark.parametrize('code', [
-    function_with_defaults,
-    good_default,
+    "'string'",
+    "b''",
+    '1',
+    '-0',
+    'variable',
+    '(1, 2)',
+    'None',
+    '...',
 ])
 def test_correct_function_defaults(
     assert_errors,
@@ -59,7 +57,7 @@ def test_correct_function_defaults(
     mode,
 ):
     """Testing that correct function defaults passes validation."""
-    tree = parse_ast_tree(mode(function_with_defaults.format(good_default)))
+    tree = parse_ast_tree(mode(function_with_defaults.format(code)))
 
     visitor = FunctionDefinitionVisitor(default_options, tree=tree)
     visitor.run()

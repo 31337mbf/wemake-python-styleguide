@@ -21,6 +21,12 @@ partial_number = .05  # noqa: Z304
 formatted_string = f'Hi, {full_name}'  # noqa: Z305
 
 
+def __getattr__():  # noqa: Z413
+    # See:
+    # https://github.com/wemake-services/wemake-python-styleguide/issues/461
+    anti_z444 = 1
+
+
 def function_name(
     value: int = 0,  # noqa: Z110
 ):
@@ -128,14 +134,6 @@ elif line > 4:
     anti_z444 = 1
 
 
-numbers = [
-    target  # noqa: Z224
-    for assignment in range(hex_number)
-    for target in range(assignment)
-    for _ in range(10)
-    if isinstance(target, int)
-]
-
 try:  # noqa: Z225
     do_some_bad()
 except ValueError:
@@ -153,11 +151,19 @@ class BadClass:  # noqa: Z306
 
     @staticmethod  # noqa: Z433
     def some_static(arg1):
-        anti_z444 = 1
+        return [
+            target  # noqa: Z224
+            for assignment in range(hex_number)
+            for target in range(assignment)
+            for _ in range(10)
+            if isinstance(target, int)
+        ]
 
     @staticmethod  # noqa: Z433
     async def some_async_static(arg1):
-        anti_z444 = 1
+        return [
+            node for node in 'abc' if node != 'a' if node != 'b'  # noqa: Z307
+        ]
 
     def __del__(self, *_args, **_kwargs):  # noqa: Z434
         anti_z444 = 1
@@ -167,8 +173,6 @@ class BadClass:  # noqa: Z306
 
 
 magic_numbers = 13.2 + 50  # noqa: Z432
-
-nodes = [node for node in 'abc' if node != 'a' if node != 'b']  # noqa: Z307
 
 assert 1 > 1 > hex_number  # noqa: Z308
 assert 2 > octal_number  # noqa: Z309
@@ -206,9 +210,6 @@ class SomeClass(FirstParent,  # noqa: Z317
 if SomeClass:
         print(SomeClass)  # noqa: Z318
 
-some_set = {1
-           }  # noqa: Z318
-
 print(
     1,
     2)  # noqa: Z319
@@ -221,7 +222,8 @@ def function(  # noqa: Z320
 ) -> Optional[
     str,
 ]:
-    anti_z444 = 1
+    some_set = {1
+               }  # noqa: Z318
 
 
 string_modifier = R'(s)'  # noqa: Z321
@@ -253,6 +255,10 @@ try:
 except Exception as ex:  # noqa: Z329
     raise ex
 
+def some_function():  # noqa: Z331
+    some_value = 1
+    return some_value
+
 try:
     anti_z444 = 1
 except BaseException:  # noqa: Z424
@@ -264,7 +270,6 @@ for symbol in 'abc':  # noqa: Z436
     anti_z444 = 1
 else:
     anti_z444 = 1
-
 
 try:  # noqa: Z437
     anti_z444 = 1
@@ -307,7 +312,6 @@ except ValueError:
     anti_z444 = 1
 
 iters = list((yield letter) for letter in 'ab')  # noqa: Z448
-some_set = {1, 1}  # noqa: Z449
 
 
 class MyBadException(BaseException):  # noqa: Z450
@@ -330,6 +334,7 @@ class ClassWithWrongContents((lambda: object)()):  # noqa: Z454
 
     def method_with_no_args():  # noqa: Z453
         super(ClassWithWrongContents, self).method_with_no_args()  # noqa: Z456
+        self.some_set = {1, 1}  # noqa: Z449
 
 
 def redundant_returning_else():
@@ -383,3 +388,5 @@ if some and (  # noqa: Z465
     anti_z444 == 1
 ):
     anti_z444 = 'some text'
+
+CONSTANT = []  # noqa: Z466

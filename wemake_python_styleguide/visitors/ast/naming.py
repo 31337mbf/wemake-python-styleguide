@@ -3,6 +3,8 @@
 import ast
 from typing import Callable, List, Optional, Tuple, Union
 
+from typing_extensions import final
+
 from wemake_python_styleguide.constants import (
     MODULE_METADATA_VARIABLES_BLACKLIST,
     SPECIAL_ARGUMENT_NAMES_WHITELIST,
@@ -20,7 +22,6 @@ from wemake_python_styleguide.types import (
     AnyFunctionDefAndLambda,
     AnyImport,
     ConfigurationOptions,
-    final,
 )
 from wemake_python_styleguide.violations import base, naming
 from wemake_python_styleguide.violations.best_practices import (
@@ -33,6 +34,10 @@ from wemake_python_styleguide.visitors.decorators import alias
 VariableDef = Union[ast.Name, ast.Attribute, ast.ExceptHandler]
 AssignTargets = List[ast.expr]
 AssignTargetsNameList = List[Union[str, Tuple[str]]]
+
+
+def _get_name_from_node(node: ast.expr) -> Optional[str]:
+    return getattr(node, 'id', None)
 
 
 class _NameValidator(object):
@@ -126,7 +131,7 @@ class _NameValidator(object):
                 if not isinstance(target, ast.Name):
                     continue
 
-                name: Optional[str] = getattr(target, 'id', None)
+                name = _get_name_from_node(target)
                 if name and logical.is_upper_case_name(name):
                     self._error_callback(
                         naming.UpperCaseAttributeViolation(target, text=name),
@@ -248,7 +253,7 @@ class WrongModuleMetadataVisitor(BaseNodeVisitor):
             return
 
         for target_node in node.targets:
-            target_node_id = getattr(target_node, 'id', None)
+            target_node_id = _get_name_from_node(target_node)
             if target_node_id in MODULE_METADATA_VARIABLES_BLACKLIST:
                 self.add_violation(
                     WrongModuleMetadataViolation(node, text=target_node_id),
@@ -294,10 +299,10 @@ class WrongVariableAssignmentVisitor(BaseNodeVisitor):
         if isinstance(node.value, ast.Tuple):
             node_values = node.value.elts
             values_names = tuple(
-                getattr(node_value, 'id', None) for node_value in node_values
+                _get_name_from_node(node_value) for node_value in node_values
             )
         else:
-            values_names = getattr(node.value, 'id', None)
+            values_names = _get_name_from_node(node.value)  # type: ignore
         has_repeatable_values = len(target_names) != len(set(target_names))
         if values_names in target_names or has_repeatable_values:
             self.add_violation(ReassigningVariableToItselfViolation(node))
