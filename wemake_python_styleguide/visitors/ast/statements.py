@@ -1,36 +1,50 @@
 # -*- coding: utf-8 -*-
 
 import ast
-from typing import ClassVar, Mapping, Optional, Sequence, Union
+from typing import ClassVar, Mapping, Optional, Sequence, Set, Union
 
 from typing_extensions import final
 
-from wemake_python_styleguide.logics.collections import normalize_dict_elements
-from wemake_python_styleguide.logics.functions import get_all_arguments
-from wemake_python_styleguide.logics.nodes import get_parent, is_doc_string
-from wemake_python_styleguide.types import AnyFunctionDef, AnyNodes
+from wemake_python_styleguide.compat.aliases import ForNodes, FunctionNodes
+from wemake_python_styleguide.logic import functions, nodes, strings
+from wemake_python_styleguide.logic.collections import (
+    first,
+    normalize_dict_elements,
+    sequence_of_node,
+)
+from wemake_python_styleguide.logic.naming import name_nodes
+from wemake_python_styleguide.types import (
+    AnyFor,
+    AnyFunctionDef,
+    AnyNodes,
+    AnyWith,
+)
 from wemake_python_styleguide.violations.best_practices import (
     StatementHasNoEffectViolation,
     UnreachableCodeViolation,
+    WrongNamedKeywordViolation,
 )
 from wemake_python_styleguide.violations.consistency import (
+    AugmentedAssignPatternViolation,
     ParametersIndentationViolation,
     UselessNodeViolation,
+)
+from wemake_python_styleguide.violations.refactoring import (
+    AlmostSwappedViolation,
+    MisrefactoredAssignmentViolation,
+    PointlessStarredViolation,
 )
 from wemake_python_styleguide.visitors.base import BaseNodeVisitor
 from wemake_python_styleguide.visitors.decorators import alias
 
 StatementWithBody = Union[
     ast.If,
-    ast.For,
-    ast.AsyncFor,
+    AnyFor,
     ast.While,
-    ast.With,
-    ast.AsyncWith,
+    AnyWith,
     ast.Try,
     ast.ExceptHandler,
-    ast.FunctionDef,
-    ast.AsyncFunctionDef,
+    AnyFunctionDef,
     ast.ClassDef,
     ast.Module,
 ]
@@ -73,17 +87,18 @@ class StatementsWithBodiesVisitor(BaseNodeVisitor):
     )
 
     _have_doc_strings: ClassVar[AnyNodes] = (
-        ast.FunctionDef,
-        ast.AsyncFunctionDef,
+        *FunctionNodes,
         ast.ClassDef,
         ast.Module,
     )
 
-    # FIXME: not typed, `mypy` will complain about `isinstance` calls
+    _blocked_self_assignment: ClassVar[AnyNodes] = (
+        ast.BinOp,
+    )
+
     _nodes_with_orelse = (
         ast.If,
-        ast.For,
-        ast.AsyncFor,
+        *ForNodes,
         ast.While,
         ast.Try,
     )
@@ -129,6 +144,53 @@ class StatementsWithBodiesVisitor(BaseNodeVisitor):
         'AsyncWith': _generally_useless_body,
     }
 
+    def visit_statement_with_body(self, node: StatementWithBody) -> None:
+        """
+        Visits statement's body internals.
+
+        Raises:
+            UnreachableCodeViolation,
+            UselessNodeViolation
+
+        """
+        self._check_internals(node.body)
+        if isinstance(node, self._nodes_with_orelse):
+            self._check_internals(node.orelse)
+        if isinstance(node, ast.Try):
+            self._check_internals(node.finalbody)
+
+        self._check_swapped_variables(node.body)
+        self._check_useless_node(node, node.body)
+        self.generic_visit(node)
+
+    def _check_swapped_variables(
+        self,
+        body: Sequence[ast.stmt],
+    ) -> None:
+        for assigns in sequence_of_node((ast.Assign,), body):
+            self._almost_swapped(assigns)
+
+    def _almost_swapped(self, assigns: Sequence[ast.Assign]) -> None:
+        previous_var: Set[Optional[str]] = set()
+
+        for assign in assigns:
+            current_var = {
+                first(name_nodes.flat_variable_names([assign])),
+                first(name_nodes.get_variables_from_node(assign.value)),
+            }
+
+            if not all(map(bool, current_var)):
+                previous_var.clear()
+                continue
+
+            if current_var == previous_var:
+                self.add_violation(AlmostSwappedViolation(assign))
+
+            if len(previous_var & current_var) == 1:
+                current_var ^= previous_var
+
+            previous_var = current_var
+
     def _check_useless_node(
         self,
         node: StatementWithBody,
@@ -158,13 +220,26 @@ class StatementsWithBodiesVisitor(BaseNodeVisitor):
         if isinstance(node.value, self._have_effect):
             return
 
-        if is_first and is_doc_string(node):
-            if isinstance(get_parent(node), self._have_doc_strings):
+        if is_first and strings.is_doc_string(node):
+            if isinstance(nodes.get_parent(node), self._have_doc_strings):
                 return
 
         self.add_violation(StatementHasNoEffectViolation(node))
 
+    def _check_self_misrefactored_assignment(
+        self,
+        node: ast.AugAssign,
+    ) -> None:
+        node_value: ast.expr
+        if isinstance(node.value, ast.BinOp):
+            node_value = node.value.left
+
+        if isinstance(node.value, self._blocked_self_assignment):
+            if name_nodes.is_same_variable(node.target, node_value):
+                self.add_violation(MisrefactoredAssignmentViolation(node))
+
     def _check_internals(self, body: Sequence[ast.stmt]) -> None:
+
         after_closing_node = False
         for index, statement in enumerate(body):
             if after_closing_node:
@@ -176,23 +251,8 @@ class StatementsWithBodiesVisitor(BaseNodeVisitor):
             if isinstance(statement, ast.Expr):
                 self._check_expression(statement, is_first=index == 0)
 
-    def visit_statement_with_body(self, node: StatementWithBody) -> None:
-        """
-        Visits statement's body internals.
-
-        Raises:
-            UnreachableCodeViolation,
-            UselessNodeViolation
-
-        """
-        self._check_internals(node.body)
-        if isinstance(node, self._nodes_with_orelse):
-            self._check_internals(node.orelse)
-        if isinstance(node, ast.Try):
-            self._check_internals(node.finalbody)
-
-        self._check_useless_node(node, node.body)
-        self.generic_visit(node)
+            if isinstance(statement, ast.AugAssign):
+                self._check_self_misrefactored_assignment(statement)
 
 
 @final
@@ -208,6 +268,32 @@ class StatementsWithBodiesVisitor(BaseNodeVisitor):
 ))
 class WrongParametersIndentationVisitor(BaseNodeVisitor):
     """Ensures that all parameters indentation follow our rules."""
+
+    def visit_collection(self, node: AnyCollection) -> None:
+        """Checks how collection items indentation."""
+        if isinstance(node, ast.Dict):
+            elements = normalize_dict_elements(node)
+        else:
+            elements = node.elts
+        self._check_indentation(node, elements, extra_lines=1)
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        """Checks call arguments indentation."""
+        all_args = [*node.args, *[kw.value for kw in node.keywords]]
+        self._check_indentation(node, all_args)
+        self.generic_visit(node)
+
+    def visit_any_function(self, node: AnyFunctionDef) -> None:
+        """Checks function parameters indentation."""
+        self._check_indentation(node, functions.get_all_arguments(node))
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """Checks base classes indentation."""
+        all_args = [*node.bases, *[kw.value for kw in node.keywords]]
+        self._check_indentation(node, all_args)
+        self.generic_visit(node)
 
     def _check_first_element(
         self,
@@ -260,28 +346,114 @@ class WrongParametersIndentationVisitor(BaseNodeVisitor):
                     multi_line_mode,
                 )
 
-    def visit_collection(self, node: AnyCollection) -> None:
-        """Checks how collection items indentation."""
-        if isinstance(node, ast.Dict):
-            elements = normalize_dict_elements(node)
-        else:
-            elements = node.elts
-        self._check_indentation(node, elements, extra_lines=1)
-        self.generic_visit(node)
+
+@final
+class PointlessStarredVisitor(BaseNodeVisitor):
+    """Responsible for absence of useless starred expressions."""
+
+    _pointless_star_nodes: ClassVar[AnyNodes] = (
+        ast.Dict,
+        ast.List,
+        ast.Set,
+        ast.Tuple,
+    )
 
     def visit_Call(self, node: ast.Call) -> None:
-        """Checks call arguments indentation."""
-        all_args = [*node.args, *[kw.value for kw in node.keywords]]
-        self._check_indentation(node, all_args)
+        """Checks useless call arguments."""
+        self._check_starred_args(node.args)
+        self._check_double_starred_dict(node.keywords)
         self.generic_visit(node)
 
-    def visit_any_function(self, node: AnyFunctionDef) -> None:
-        """Checks function parameters indentation."""
-        self._check_indentation(node, get_all_arguments(node))
+    def _check_starred_args(
+        self,
+        args: Sequence[ast.AST],
+    ) -> None:
+        for node in args:
+            if isinstance(node, ast.Starred):
+                if self._is_pointless_star(node.value):
+                    self.add_violation(PointlessStarredViolation(node))
+
+    def _check_double_starred_dict(
+        self,
+        keywords: Sequence[ast.keyword],
+    ) -> None:
+        for keyword in keywords:
+            if keyword.arg is not None:
+                continue
+
+            complex_keys = self._has_non_string_keys(keyword)
+            pointless_args = self._is_pointless_star(keyword.value)
+            if not complex_keys and pointless_args:
+                self.add_violation(PointlessStarredViolation(keyword.value))
+
+    def _is_pointless_star(self, node: ast.AST) -> bool:
+        return isinstance(node, self._pointless_star_nodes)
+
+    def _has_non_string_keys(self, node: ast.keyword) -> bool:
+        if not isinstance(node.value, ast.Dict):
+            return True
+
+        for key_node in node.value.keys:
+            if not isinstance(key_node, ast.Str):
+                return True
+        return False
+
+
+@final
+class WrongNamedKeywordVisitor(BaseNodeVisitor):
+    """Responsible for absence of wrong keywords."""
+
+    def visit_Call(self, node: ast.Call) -> None:
+        """Checks useless call arguments."""
+        self._check_double_starred_dict(node.keywords)
         self.generic_visit(node)
 
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        """Checks base classes indentation."""
-        all_args = [*node.bases, *[kw.value for kw in node.keywords]]
-        self._check_indentation(node, all_args)
+    def _check_double_starred_dict(
+        self,
+        keywords: Sequence[ast.keyword],
+    ) -> None:
+        for keyword in keywords:
+            if keyword.arg is not None:
+                continue
+
+            if self._has_wrong_keys(keyword):
+                self.add_violation(WrongNamedKeywordViolation(keyword.value))
+
+    def _has_wrong_keys(self, node: ast.keyword) -> bool:
+        if not isinstance(node.value, ast.Dict):
+            return False
+
+        for key_node in node.value.keys:
+            if isinstance(key_node, ast.Str):
+                if not str.isidentifier(key_node.s):
+                    return True
+        return False
+
+
+@final
+class AssignmentPatternsVisitor(BaseNodeVisitor):
+    """Responsible for checking assignment patterns."""
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        """Checks assignment patterns."""
+        self._check_augmented_assign_pattern(node)
         self.generic_visit(node)
+
+    def _check_augmented_assign_pattern(
+        self,
+        node: ast.Assign,
+    ) -> None:
+        if not isinstance(node.value, ast.BinOp):
+            return
+
+        is_checkable = (
+            len(node.targets) == 1 and
+            isinstance(node.value.right, ast.Name) and
+            isinstance(node.value.left, ast.Name)
+        )
+
+        if not is_checkable:
+            return
+
+        if name_nodes.is_same_variable(node.targets[0], node.value.left):
+            self.add_violation(AugmentedAssignPatternViolation(node))

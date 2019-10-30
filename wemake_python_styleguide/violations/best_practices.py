@@ -23,119 +23,102 @@ Summary
    WrongDocCommentViolation
    OveruseOfNoqaCommentViolation
    OveruseOfNoCoverCommentViolation
+   ComplexDefaultValueViolation
+   LoopVariableDefinitionViolation
+   ContextManagerVariableDefinitionViolation
+   MutableModuleConstantViolation
+   SameElementsInConditionViolation
+   HeterogenousCompareViolation
    WrongModuleMetadataViolation
    EmptyModuleViolation
    InitModuleHasLogicViolation
    BadMagicModuleFunctionViolation
+   WrongUnpackingViolation
+   DuplicateExceptionViolation
+   YieldInComprehensionViolation
+   NonUniqueItemsInHashViolation
+   BaseExceptionSubclassViolation
+   TryExceptMultipleReturnPathViolation
    WrongKeywordViolation
    WrongFunctionCallViolation
    FutureImportViolation
    RaiseNotImplementedViolation
    BaseExceptionViolation
    BooleanPositionalArgumentViolation
-   NestedFunctionViolation
-   NestedClassViolation
-   MagicNumberViolation
-   StaticMethodViolation
-   BadMagicMethodViolation
-   NestedImportViolation
-   RedundantLoopElseViolation
-   RedundantFinallyViolation
-   ReassigningVariableToItselfViolation
-   YieldInsideInitViolation
-   ProtectedModuleViolation
-   ProtectedAttributeViolation
    LambdaInsideLoopViolation
    UnreachableCodeViolation
    StatementHasNoEffectViolation
    MultipleAssignmentsViolation
-   IncorrectUnpackingViolation
-   DuplicateExceptionViolation
-   YieldInComprehensionViolation
-   NonUniqueItemsInSetViolation
-   BaseExceptionSubclassViolation
-   SimplifiableIfViolation
-   IncorrectClassBodyContentViolation
-   MethodWithoutArgumentsViolation
-   IncorrectBaseClassViolation
-   IncorrectSlotsViolation
-   IncorrectSuperCallViolation
-   RedundantReturningElseViolation
-   TryExceptMultipleReturnPathViolation
-   ComplexDefaultValuesViolation
-   LoopVariableDefinitionViolation
-   ContextManagerVariableDefinitionViolation
-   DirectMagicAttributeAccessViolation
-   NegatedConditionsViolation
-   NestedTryViolation
-   MultilineConditionsViolation
-   MutableModuleConstantViolation
+   NestedFunctionViolation
+   NestedClassViolation
+   MagicNumberViolation
+   NestedImportViolation
+   ReassigningVariableToItselfViolation
+   ListMultiplyViolation
+   ProtectedModuleViolation
+   ProtectedAttributeViolation
+   StopIterationInsideGeneratorViolation
+   WrongUnicodeEscapeViolation
+   BlockAndLocalOverlapViolation
+   ControlVarUsedAfterBlockViolation
+   OuterScopeShadowingViolation
+   UnhashableTypeInHashViolation
+   WrongKeywordConditionViolation
+   WrongNamedKeywordViolation
+   ApproximateConstantViolation
+   StringConstantRedefinedViolation
 
-Comments
---------
+Best practices
+--------------
 
 .. autoclass:: WrongMagicCommentViolation
 .. autoclass:: WrongDocCommentViolation
 .. autoclass:: OveruseOfNoqaCommentViolation
 .. autoclass:: OveruseOfNoCoverCommentViolation
-
-Modules
--------
-
+.. autoclass:: ComplexDefaultValueViolation
+.. autoclass:: LoopVariableDefinitionViolation
+.. autoclass:: ContextManagerVariableDefinitionViolation
+.. autoclass:: MutableModuleConstantViolation
+.. autoclass:: SameElementsInConditionViolation
+.. autoclass:: HeterogenousCompareViolation
 .. autoclass:: WrongModuleMetadataViolation
 .. autoclass:: EmptyModuleViolation
 .. autoclass:: InitModuleHasLogicViolation
 .. autoclass:: BadMagicModuleFunctionViolation
-
-Builtins
---------
+.. autoclass:: WrongUnpackingViolation
+.. autoclass:: DuplicateExceptionViolation
+.. autoclass:: YieldInComprehensionViolation
+.. autoclass:: NonUniqueItemsInHashViolation
+.. autoclass:: BaseExceptionSubclassViolation
+.. autoclass:: TryExceptMultipleReturnPathViolation
 .. autoclass:: WrongKeywordViolation
 .. autoclass:: WrongFunctionCallViolation
 .. autoclass:: FutureImportViolation
 .. autoclass:: RaiseNotImplementedViolation
 .. autoclass:: BaseExceptionViolation
 .. autoclass:: BooleanPositionalArgumentViolation
-
-Design
-------
-
-.. autoclass:: NestedFunctionViolation
-.. autoclass:: NestedClassViolation
-.. autoclass:: MagicNumberViolation
-.. autoclass:: StaticMethodViolation
-.. autoclass:: BadMagicMethodViolation
-.. autoclass:: NestedImportViolation
-.. autoclass:: RedundantLoopElseViolation
-.. autoclass:: RedundantFinallyViolation
-.. autoclass:: ReassigningVariableToItselfViolation
-.. autoclass:: YieldInsideInitViolation
-.. autoclass:: ProtectedModuleViolation
-.. autoclass:: ProtectedAttributeViolation
 .. autoclass:: LambdaInsideLoopViolation
 .. autoclass:: UnreachableCodeViolation
 .. autoclass:: StatementHasNoEffectViolation
 .. autoclass:: MultipleAssignmentsViolation
-.. autoclass:: IncorrectUnpackingViolation
-.. autoclass:: DuplicateExceptionViolation
-.. autoclass:: YieldInComprehensionViolation
-.. autoclass:: NonUniqueItemsInSetViolation
-.. autoclass:: BaseExceptionSubclassViolation
-.. autoclass:: SimplifiableIfViolation
-.. autoclass:: IncorrectClassBodyContentViolation
-.. autoclass:: MethodWithoutArgumentsViolation
-.. autoclass:: IncorrectBaseClassViolation
-.. autoclass:: IncorrectSlotsViolation
-.. autoclass:: IncorrectSuperCallViolation
-.. autoclass:: RedundantReturningElseViolation
-.. autoclass:: TryExceptMultipleReturnPathViolation
-.. autoclass:: ComplexDefaultValuesViolation
-.. autoclass:: LoopVariableDefinitionViolation
-.. autoclass:: ContextManagerVariableDefinitionViolation
-.. autoclass:: DirectMagicAttributeAccessViolation
-.. autoclass:: NegatedConditionsViolation
-.. autoclass:: NestedTryViolation
-.. autoclass:: MultilineConditionsViolation
-.. autoclass:: MutableModuleConstantViolation
+.. autoclass:: NestedFunctionViolation
+.. autoclass:: NestedClassViolation
+.. autoclass:: MagicNumberViolation
+.. autoclass:: NestedImportViolation
+.. autoclass:: ReassigningVariableToItselfViolation
+.. autoclass:: ListMultiplyViolation
+.. autoclass:: ProtectedModuleViolation
+.. autoclass:: ProtectedAttributeViolation
+.. autoclass:: StopIterationInsideGeneratorViolation
+.. autoclass:: WrongUnicodeEscapeViolation
+.. autoclass:: BlockAndLocalOverlapViolation
+.. autoclass:: ControlVarUsedAfterBlockViolation
+.. autoclass:: OuterScopeShadowingViolation
+.. autoclass:: UnhashableTypeInHashViolation
+.. autoclass:: WrongKeywordConditionViolation
+.. autoclass:: WrongNamedKeywordViolation
+.. autoclass:: ApproximateConstantViolation
+.. autoclass:: StringConstantRedefinedViolation
 
 """
 
@@ -157,6 +140,9 @@ class WrongMagicCommentViolation(SimpleViolation):
 
     1. ``# noqa`` comment without specified violations
     2. ``# type: some_type`` comments to specify a type for ``typed_ast``
+
+    This violation is reported at the top of the module,
+    so it cannot be locally ignored.
 
     Reasoning:
         We cover several different use-cases in a single rule.
@@ -234,7 +220,7 @@ class OveruseOfNoqaCommentViolation(SimpleViolation):
 
     We count it on a per-module basis.
     We use :str:`wemake_python_styleguide.constants.MAX_NOQA_COMMENTS`
-    as a default value.
+    as a hard limit.
 
     Reasoning:
         Having too many ``# noqa`` comments make your code
@@ -244,6 +230,11 @@ class OveruseOfNoqaCommentViolation(SimpleViolation):
     Solution:
         Refactor your code to match our style.
         Or use a config file to switch off some checks.
+
+    Configuration:
+        This rule is configurable with ``--max-noqa-comments``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_NOQA_COMMENTS`
 
     .. versionadded:: 0.7.0
 
@@ -280,7 +271,219 @@ class OveruseOfNoCoverCommentViolation(SimpleViolation):
     code = 403
 
 
-# Modules:
+@final
+class ComplexDefaultValueViolation(ASTViolation):
+    """
+    Forbids to use complex defaults.
+
+    Anything that is not a ``ast.Name``, ``ast.Attribute``, ``ast.Str``,
+    ``ast.NameConstant``, ``ast.Tuple``, ``ast.Bytes``, ``ast.Num``
+    or ``ast.Ellipsis`` should be moved out from defaults.
+
+    Reasoning:
+        It can be tricky. Nothing stops you from making database calls or http
+        requests in such expressions. It is also not readable for us.
+
+    Solution:
+        Move the expression out from default value.
+
+    Example::
+
+        # Correct:
+        SHOULD_USE_DOCTEST = 'PYFLAKES_DOCTEST' in os.environ
+        def __init__(self, with_doctest=SHOULD_USE_DOCTEST):
+
+        # Wrong:
+        def __init__(self, with_doctest='PYFLAKES_DOCTEST' in os.environ):
+
+    .. versionadded:: 0.8.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found complex default value'
+    code = 404
+    previous_codes = {459}
+
+
+@final
+class LoopVariableDefinitionViolation(ASTViolation):
+    """
+    Forbids to use anything rather than ``ast.Name`` to define loop variables.
+
+    Reasoning:
+        When defining a ``for`` loop with attributes, indexes, calls,
+        or any other nodes it does dirty things inside.
+
+    Solution:
+        Use regular ``ast.Name`` variables.
+        Or tuple of ``ast.Name`` variables.
+        Star names are also fine.
+
+    Example::
+
+        # Correct:
+        for person in database.people():
+            ...
+
+        # Wrong:
+        for context['person'] in database.people():
+            ...
+
+    .. versionadded:: 0.8.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found wrong `for` loop variable definition'
+    code = 405
+    previous_codes = {460}
+
+
+@final
+class ContextManagerVariableDefinitionViolation(ASTViolation):
+    """
+    Forbids to use anything rather than ``ast.Name`` to define contexts.
+
+    Reasoning:
+        When defining a ``with`` context managers with attributes,
+        indexes, calls, or any other nodes it does dirty things inside.
+
+    Solution:
+        Use regular ``ast.Name`` variables.
+        Or tuple of ``ast.Name`` variables.
+        Star names are also fine.
+
+    Example::
+
+        # Correct:
+        with open('README.md') as readme:
+            ...
+
+        # Wrong:
+        with open('README.md') as files['readme']:
+            ...
+
+    .. versionadded:: 0.8.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found wrong context manager variable definition'
+    code = 406
+    previous_codes = {461}
+
+
+@final
+class MutableModuleConstantViolation(ASTViolation):
+    """
+    Forbids mutable constants on a module level.
+
+    Reasoning:
+        Constants should be immutable.
+
+    Solution:
+        Use immutable types for constants.
+
+    We only treat ``ast.Set``, ``ast.Dict``, ``ast.List``, and comprehensions
+    as mutable things. All other nodes are still fine.
+
+    Example::
+
+        # Correct:
+        import types
+        CONST1 = frozenset((1, 2, 3))
+        CONST2 = (1, 2, 3)
+        CONST3 = types.MappingProxyType({'key': 'value'})
+
+        # Wrong:
+        CONST1 = {1, 2, 3}
+        CONST2 = [x for x in some()]
+        CONST3 = {'key': 'value'}
+
+    .. versionadded:: 0.10.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found mutable module constant'
+    code = 407
+    previous_codes = {466}
+
+
+@final
+class SameElementsInConditionViolation(ASTViolation):
+    """
+    Forbids to use the same logical conditions in one expression.
+
+    Reasoning:
+        Using the same name in logical condition more that once
+        indicates that you are either making a logical mistake,
+        or just over-complicating your design.
+
+    Solution:
+        Remove the duplicating condition.
+
+    Example::
+
+        # Correct:
+        if some_value or other_value:
+            ...
+
+        # Wrong:
+        if some_value or some_value:
+            ...
+
+    .. versionadded:: 0.10.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found duplicate logical condition'
+    code = 408
+    previous_codes = {469}
+
+
+@final
+class HeterogenousCompareViolation(ASTViolation):
+    """
+    Forbids to heterogenous operators in one compare.
+
+    Note, that we allow to mix ``>`` with ``>=``
+    and ``<`` with ``<=`` operators.
+
+    Reasoning:
+        This is hard to read and understand.
+
+    Solution:
+        Refactor the expression to have separate parts
+        joined with ``and`` boolean operator.
+
+    Example::
+
+        # Correct:
+        if x == y == z:
+            ...
+
+        if x > y >= z:
+            ...
+
+        # Wrong:
+        if x > y == 5:
+            ...
+
+        if x == y != z:
+            ...
+
+    .. versionadded:: 0.10.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found heterogenous compare'
+    code = 409
+    previous_codes = {471}
+
 
 @final
 class WrongModuleMetadataViolation(ASTViolation):
@@ -379,7 +582,7 @@ class InitModuleHasLogicViolation(SimpleViolation):
 @final
 class BadMagicModuleFunctionViolation(ASTViolation):
     """
-    Forbids to use ``__getaddr__`` and ``__dir__`` module magic methods.
+    Forbids to use ``__getattr__`` and ``__dir__`` module magic methods.
 
     Reasoning:
         It does not bring any features,
@@ -401,7 +604,247 @@ class BadMagicModuleFunctionViolation(ASTViolation):
     code = 413
 
 
-# Modules:
+@final
+class WrongUnpackingViolation(ASTViolation):
+    """
+    Forbids to have tuple unpacking with side-effects.
+
+    Reasoning:
+        Having unpacking with side-effects is very dirty.
+        You might get in serious and very hard-to-debug troubles because of
+        this technique. So, do not use it.
+
+    Solution:
+        Use unpacking with only variables, not any other entities.
+
+    Example::
+
+        # Correct:
+        first, second = some()
+
+        # Wrong:
+        first, some_dict['alias'] = some()
+
+    .. versionadded:: 0.6.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found incorrect unpacking target'
+    code = 414
+    previous_codes = {446}
+
+
+@final
+class DuplicateExceptionViolation(ASTViolation):
+    """
+    Forbids to have the same exception class in multiple ``except`` blocks.
+
+    Reasoning:
+        Having the same exception name in different blocks means
+        that something is not right: since only one branch will work.
+        Other one will always be ignored. So, that is clearly an error.
+
+    Solution:
+        Use unique exception handling rules.
+
+    Example::
+
+        # Correct:
+        try:
+            ...
+        except ValueError:
+            ...
+
+        # Wrong:
+        try:
+            ...
+        except ValueError:
+            ...
+        except ValueError:
+            ...
+
+    .. versionadded:: 0.6.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found duplicate exception: {0}'
+    code = 415
+    previous_codes = {447}
+
+
+@final
+class YieldInComprehensionViolation(ASTViolation):
+    """
+    Forbids to have ``yield`` keyword inside comprehensions.
+
+    Reasoning:
+        Having the ``yield`` keyword inside comprehensions is error-prone.
+        You can shoot yourself in a foot by
+        an inaccurate usage of this feature.
+
+    Solution:
+        Use regular ``for`` loops with ``yield`` keywords.
+        Or create a separate generator function.
+
+    Example::
+
+        # Wrong:
+        list((yield letter) for letter in 'ab')
+        # Will resilt in: ['a', None, 'b', None]
+
+        list([(yield letter) for letter in 'ab'])
+        # Will result in: ['a', 'b']
+
+
+    See also:
+        https://github.com/satwikkansal/wtfPython#-yielding-none
+
+    .. versionadded:: 0.7.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found `yield` inside comprehension'
+    code = 416
+    previous_codes = {448}
+
+
+@final
+class NonUniqueItemsInHashViolation(ASTViolation):
+    """
+    Forbids to have duplicate items in hashes.
+
+    Reasoning:
+        When you explicitly put duplicate items
+        in ``set`` literals or in ``dict`` keys
+        it just does not make any sense. Since hashes cannot contain
+        duplicate items and they will be removed anyway.
+
+    Solution:
+        Remove duplicate items.
+
+    Example::
+
+        # Correct:
+        some_set = {'a', variable1}
+        some_set = {make_call(), make_call()}
+
+        # Wrong:
+        some_set = {'a', 'a', variable1, variable1}
+
+    Things that we consider duplicates: builtins and variables.
+    These nodes are not checked because they may return different results:
+
+    - function and method calls
+    - comprehensions
+    - attributes
+    - subscribe operations
+
+    .. versionadded:: 0.7.0
+    .. versionchanged:: 0.11.0
+    .. versionchanged:: 0.12.0
+
+    """
+
+    error_template = 'Found non-unique item in hash: {0}'
+    code = 417
+    previous_codes = {449}
+
+
+@final
+class BaseExceptionSubclassViolation(ASTViolation):
+    """
+    Forbids to have duplicate items in ``set`` literals.
+
+    Reasoning:
+        ``BaseException`` is a special case:
+        it is not designed to be extended by users.
+        A lot of your ``except Exception`` cases won't work.
+        That's incorrect and dangerous.
+
+    Solution:
+        Change the base class to ``Exception``.
+
+    Example::
+
+        # Correct:
+        class MyException(Exception):
+            ...
+
+        # Wrong:
+        class MyException(BaseException):
+            ...
+
+    See also:
+        https://docs.python.org/3/library/exceptions.html#exception-hierarchy
+
+    .. versionadded:: 0.7.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found exception inherited from `BaseException`'
+    code = 418
+    previous_codes = {450}
+
+
+@final
+class TryExceptMultipleReturnPathViolation(ASTViolation):
+    """
+    Forbids to use multiple returning paths with ``try`` / ``except`` case.
+
+    Note, that we check for any ``return``, ``break``, or ``raise`` nodes.
+
+    Reasoning:
+        The problem with ``return`` in ``else`` and ``finally``
+        is that it is impossible to say what value is going to be actually
+        returned without looking up the implementation details. Why?
+        Because ``return`` does not expect
+        that some other code will be executed after it.
+        But, ``finally`` is always executed, even after ``return``.
+        And ``else`` will not be executed when there are no exceptions
+        in ``try`` case and a ``return`` statement.
+
+    Solution:
+        Remove ``return`` from one of the cases.
+
+    Example::
+
+        # Correct:
+        try:
+            return 1
+        except YourException:
+            ...
+        finally:
+            clear_things_up()
+
+        # Wrong:
+        try:
+            return 1  # this line will never return
+        except Exception:
+            ...
+        finally:
+            return 2  # this line will actually return
+
+        try:
+            return 1  # this line will actually return
+        except ZeroDivisionError:
+            ...
+        else:
+            return 0  # this line will never return
+
+    .. versionadded:: 0.7.0
+    .. versionchanged:: 0.11.0
+    .. versionchanged:: 0.12.0
+
+    """
+
+    error_template = 'Found `try`/`else`/`finally` with multiple return paths'
+    code = 419
+    previous_codes = {458}
+
 
 @final
 class WrongKeywordViolation(ASTViolation):
@@ -521,7 +964,7 @@ class RaiseNotImplementedViolation(ASTViolation):
 
     .. versionadded:: 0.1.0
 
-    See Also:
+    See also:
         https://stackoverflow.com/a/44575926/4842742
 
     """
@@ -554,7 +997,7 @@ class BaseExceptionViolation(ASTViolation):
 
     .. versionadded:: 0.3.0
 
-    See Also:
+    See also:
         https://docs.python.org/3/library/exceptions.html#exception-hierarchy
         https://help.semmle.com/wiki/pages/viewpage.action?pageId=1608527
 
@@ -596,7 +1039,156 @@ class BooleanPositionalArgumentViolation(ASTViolation):
     code = 425
 
 
-# Design:
+@final
+class LambdaInsideLoopViolation(ASTViolation):
+    """
+    Forbids to use ``lambda`` inside loops.
+
+    Reasoning:
+        It is error-prone to use ``lambda`` inside
+        ``for`` and ``while`` loops due to the famous late-binding.
+
+    Solution:
+        Use regular functions, factory functions, or ``partial`` functions.
+        Save yourself from possible confusion.
+
+    Example::
+
+        # Correct:
+        for index in range(10):
+            some.append(partial_function(index))
+
+        # Wrong:
+        for index in range(10):
+            some.append(lambda index=index: index * 10))
+            other.append(lambda: index * 10))
+
+    .. versionadded:: 0.5.0
+    .. versionchanged:: 0.11.0
+
+    See also:
+        https://docs.python-guide.org/writing/gotchas/#late-binding-closures
+
+    """
+
+    error_template = "Found `lambda` in loop's body"
+    code = 426
+    previous_codes = {442}
+
+
+@final
+class UnreachableCodeViolation(ASTViolation):
+    """
+    Forbids to have unreachable code.
+
+    What is unreachable code? It is some lines of code that
+    cannot be executed by python's interpreter.
+
+    This is probably caused by ``return`` or ``raise`` statements.
+    However, we can not cover 100% of truly unreachable code by this rule.
+    This happens due to the dynamic nature of python.
+    For example, detecting that ``1 / some_value`` would sometimes raise
+    an exception is too complicated and is out of the scope of this rule.
+
+    Reasoning:
+        Having dead code in your project is an indicator that you
+        do not care about your code base at all.
+        It dramatically reduces code quality and readability.
+        It also demotivates team members.
+
+    Solution:
+        Delete any unreachable code you have.
+        Or refactor it, if this happens by your mistake.
+
+    Example::
+
+        # Correct:
+        def some_function():
+            print('This line is reachable, all good')
+            return 5
+
+        # Wrong:
+        def some_function():
+            return 5
+            print('This line is unreachable')
+
+    .. versionadded:: 0.5.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found unreachable code'
+    code = 427
+    previous_codes = {443}
+
+
+@final
+class StatementHasNoEffectViolation(ASTViolation):
+    """
+    Forbids to have statements that do nothing.
+
+    Reasoning:
+        Statements that just access the value or expressions
+        used as statements indicate that your code
+        contains deadlines. They just pollute your codebase and do nothing.
+
+    Solution:
+        Refactor your code in case it was a typo or error.
+        Or just delete this code.
+
+    Example::
+
+        # Correct:
+        def some_function():
+            price = 8 + 2
+            return price
+
+        # Wrong:
+        def some_function():
+            8 + 2
+            print
+
+    .. versionadded:: 0.5.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found statement that has no effect'
+    code = 428
+    previous_codes = {444}
+
+
+@final
+class MultipleAssignmentsViolation(ASTViolation):
+    """
+    Forbids to have multiple assignments on the same line.
+
+    Reasoning:
+        Multiple assignments on the same line might not do what you think
+        they do. They can also grown pretty long. And you will not notice
+        the rising complexity of your code.
+
+    Solution:
+        Use separate lines for each assignment.
+
+    Example::
+
+        # Correct:
+        a = 1
+        b = 1
+
+        # Wrong:
+        a = b = 1
+
+    .. versionadded:: 0.6.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found multiple assign targets'
+    code = 429
+    previous_codes = {445}
+
 
 @final
 class NestedFunctionViolation(ASTViolation):
@@ -653,9 +1245,10 @@ class NestedClassViolation(ASTViolation):
         If you are nesting classes inside a function for parametrization,
         then you will probably need to use different design (or metaclasses).
 
-    See
-    :py:data:`~wemake_python_styleguide.constants.NESTED_CLASSES_WHITELIST`
-    for the full list of whitelisted names.
+    Configuration:
+        This rule is configurable with ``--nested-classes-whitelist``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.NESTED_CLASSES_WHITELIST`
 
     Example::
 
@@ -669,6 +1262,7 @@ class NestedClassViolation(ASTViolation):
                 ...
 
     .. versionadded:: 0.1.0
+    .. versionchanged:: 0.13.0
 
     """
 
@@ -722,55 +1316,6 @@ class MagicNumberViolation(ASTViolation):
 
 
 @final
-class StaticMethodViolation(ASTViolation):
-    """
-    Forbids to use ``@staticmethod`` decorator.
-
-    Reasoning:
-        Static methods are not required to be inside the class.
-        Because they even do not have access to the current instance.
-
-    Solution:
-        Use instance methods, ``@classmethod``, or functions instead.
-
-    .. versionadded:: 0.1.0
-
-    """
-
-    error_template = 'Found using `@staticmethod`'
-    code = 433
-
-
-@final
-class BadMagicMethodViolation(ASTViolation):
-    """
-    Forbids to use some magic methods.
-
-    Reasoning:
-        We forbid to use magic methods related to the forbidden language parts.
-        Likewise, we forbid to use ``del`` keyword, so we forbid to use all
-        magic methods related to it.
-
-    Solution:
-        Refactor your code to use custom methods instead.
-        It will give more context to your app.
-
-    See
-    :py:data:`~wemake_python_styleguide.constants.MAGIC_METHODS_BLACKLIST`
-    for the full blacklist of the magic methods.
-
-    .. versionadded:: 0.1.0
-
-    See also:
-        https://www.youtube.com/watch?v=F6u5rhUQ6dU
-
-    """
-
-    error_template = 'Found using restricted magic method: {0}'
-    code = 434
-
-
-@final
 class NestedImportViolation(ASTViolation):
     """
     Forbids to have nested imports in functions.
@@ -796,6 +1341,7 @@ class NestedImportViolation(ASTViolation):
             from my_module import some_function
 
     .. versionadded:: 0.1.0
+    .. versionchanged:: 0.11.0
 
     See also:
         https://github.com/seddonym/layer_linter
@@ -803,84 +1349,8 @@ class NestedImportViolation(ASTViolation):
     """
 
     error_template = 'Found nested import'
-    code = 435
-
-
-@final
-class RedundantLoopElseViolation(ASTViolation):
-    """
-    Forbids to use ``else`` without ``break`` in a loop.
-
-    We use the same logic for ``for`` and ``while`` loops.
-
-    Reasoning:
-        When there's no ``break`` keyword in loop's body it means
-        that ``else`` will always be called.
-        This rule will reduce complexity, improve readability,
-        and protect from possible errors.
-
-    Solution:
-        Refactor your ``else`` case logic to be inside the loop's body.
-        Or right after it.
-
-    Example::
-
-        # Correct:
-        for letter in 'abc':
-            if letter == 'b':
-                break
-        else:
-            print('"b" is not found')
-
-        for letter in 'abc':
-            print(letter)
-        print('always called')
-
-        # Wrong:
-        for letter in 'abc':
-            print(letter)
-        else:
-            print('always called')
-
-    .. versionadded:: 0.3.0
-
-    """
-
-    error_template = 'Found `else` in a loop without `break`'
-    code = 436
-
-
-@final
-class RedundantFinallyViolation(ASTViolation):
-    """
-    Forbids to use ``finally`` in ``try`` block without ``except`` block.
-
-    Reasoning:
-        This rule will reduce complexity and improve readability.
-
-    Solution:
-        Refactor your ``try`` logic.
-        Replace the ``try-finally`` statement with a ``with`` statement.
-
-    Example::
-
-        # Correct:
-        with open("filename") as f:
-            f.write(...)
-
-        # Wrong:
-        try:
-            f = open("filename")
-            f.write(...)
-        finally:
-            f.close()
-
-    .. versionadded:: 0.3.0
-
-    """
-
-    error_template = 'Found `finally` in `try` block without `except`'
-    code = 437
+    code = 433
+    previous_codes = {435}
 
 
 @final
@@ -903,41 +1373,42 @@ class ReassigningVariableToItselfViolation(ASTViolation):
         x_coord, y_coord = x_coord, y_coord
 
     .. versionadded:: 0.3.0
+    .. versionchanged:: 0.11.0
 
     """
 
-    error_template = 'Found reassigning variable to itself'
-    code = 438
+    error_template = 'Found reassigning variable to itself: {0}'
+    code = 434
+    previous_codes = {438}
 
 
 @final
-class YieldInsideInitViolation(ASTViolation):
+class ListMultiplyViolation(ASTViolation):
     """
-    Forbids to use ``yield`` inside of ``__init__`` method.
+    Forbids to multiply lists.
 
     Reasoning:
-        ``__init__`` should be used to initialize new objects.
-        It shouldn't ``yield`` anything because it should return ``None``
-        by the convention.
+        When you multiply lists - it does not create new values,
+        it creates references to the existing value.
+        It is not what people mean in 99.9% of cases.
+
+    Solution:
+        Use list comprehension or loop instead.
 
     Example::
 
-         # Correct:
-        class Example(object):
-            def __init__(self):
-                self._public_items_count = 0
-
         # Wrong:
-        class Example(object):
-            def __init__(self):
-                yield 10
+        my_list = [1, 2, 3] * 3
 
-    .. versionadded:: 0.3.0
+    See also:
+        https://github.com/satwikkansal/wtfPython#-explanation-8
+
+    .. versionadded:: 0.12.0
 
     """
 
-    error_template = 'Found `yield` inside `__init__` method'
-    code = 439
+    error_template = 'Found list multiply'
+    code = 435
 
 
 @final
@@ -966,11 +1437,13 @@ class ProtectedModuleViolation(ASTViolation):
         from some.module import _protected
 
     .. versionadded:: 0.3.0
+    .. versionchanged:: 0.11.0
 
     """
 
     error_template = 'Found protected module import'
-    code = 440
+    code = 436
+    previous_codes = {440}
 
 
 @final
@@ -1008,896 +1481,377 @@ class ProtectedAttributeViolation(ASTViolation):
     This is how protected attributes should be used.
 
     .. versionadded:: 0.3.0
+    .. versionchanged:: 0.11.0
 
     """
 
     error_template = 'Found protected attribute usage: {0}'
+    code = 437
+    previous_codes = {441}
+
+
+@final
+class StopIterationInsideGeneratorViolation(ASTViolation):
+    """
+    Forbids to raise ``StopIteration`` inside generators.
+
+    Reasoning:
+        ``StopIteration`` should not be raised explicitly in generators.
+
+    Solution:
+        Use return statement to get out of a generator.
+
+    Example::
+
+        # Correct:
+        def some_generator():
+            if some_value:
+                return
+            yield 1
+
+        # Wrong:
+        def some_generator():
+            if some_value:
+                raise StopIteration
+            yield 1
+
+    See also:
+        https://docs.python.org/3/library/exceptions.html#StopIteration
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found `StopIteration` raising inside generator'
+    code = 438
+
+
+@final
+class WrongUnicodeEscapeViolation(TokenizeViolation):
+    r"""
+    Forbids to use unicode escape sequences in binary strings.
+
+    Reasoning:
+        Binary strings do not work with unicode.
+        Having unicode escape characters in there means
+        that you have an error in your code.
+
+    Solution:
+        Use regular strings when escaping unicode strings.
+
+    Example::
+
+        # Correct:
+        escaped = '\u0041'  # equals to 'A'
+
+        # Wrong:
+        escaped = b'\u0040'  # equals to b'\\u0040'
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found unicode escape in a binary string: {0}'
+    code = 439
+
+
+@final
+class BlockAndLocalOverlapViolation(ASTViolation):
+    """
+    Forbids to local and block variables to overlap.
+
+    What we call local variables:
+
+    1. Assigns and annotations
+    2. Function arguments (they are local to the function body)
+
+    What we call block variables:
+
+    1. Imports
+    2. Functions and async functions definitions
+    3. Classes, methods, and async methods definitions
+    4. For and async for loops variables
+    5. Except block exception aliases
+
+    We allow local variables to overlap theirselfs,
+    we forbid block varibals to overlap theirselfs.
+
+    Reasoning:
+        A lot of complex errors might happen when
+        you shadow local varibales with block variables
+        or when you shadow block variables with local variables.
+
+    Solution:
+        Use names that do not overlap.
+
+    Example::
+
+        # Correct:
+        my_value = 1
+        my_value = my_value + 1
+
+        # Wrong:
+        import my_value
+        my_value = 1  # overlaps with import
+
+    See also:
+        https://github.com/satwikkansal/wtfPython#-explanation-20
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found block variables overlap: {0}'
+    code = 440
+
+
+@final
+class ControlVarUsedAfterBlockViolation(ASTViolation):
+    """
+    Forbids to use control variables after the block body.
+
+    What we call block control variables:
+
+    1. ``for`` loop unpacked variables
+    2. ``with`` context variables
+    3. ``except`` exception names
+
+    Reasoning:
+        Variables leaking from the blocks can damage your logic.
+        It might not contain what you think they contain.
+        Some variables even might be deleted right after the block,
+        just like in ``except Exception as exc:``
+        where ``exc`` won't be in scope after ``except`` body.
+
+    Solution:
+        Use names inside the scope they are defined.
+        Create new functions to return values in case
+        you need to use block variables: when searching for a value, etc.
+
+    Example::
+
+        # Correct:
+        for my_item in collection:
+            print(my_item)
+
+        # Wrong:
+        for my_item in collection:
+            ...
+        print(my_item)
+
+    See also:
+        https://github.com/satwikkansal/wtfPython#-explanation-32
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found control variable used after block: {0}'
     code = 441
 
 
 @final
-class LambdaInsideLoopViolation(ASTViolation):
+class OuterScopeShadowingViolation(ASTViolation):
     """
-    Forbids to use ``lambda`` inside loops.
+    Forbids to shadow variables from outer scopes.
+
+    We check function, method, and module scopes.
+    While we do not check class scope. Because class level constants
+    are not available via regular name,
+    and they are scope to ``ClassName.var_name``.
 
     Reasoning:
-        It is error-prone to use ``lambda`` inside
-        ``for`` and ``while`` loops due to the famous late-binding.
+        Shadowing can lead you to a big pile of strage and unexpected bugs.
 
     Solution:
-        Use regular functions, factory functions, or ``partial`` functions.
-        Save yourself from possible confusion.
+        Use different names and do not allow scoping.
 
     Example::
 
         # Correct:
-        for index in range(10):
-            some.append(partial_function(index))
+        def test(): ...
+
+        def other():
+            test1 = 1
 
         # Wrong:
-        for index in range(10):
-            some.append(lambda index=index: index * 10))
-            other.append(lambda: index * 10))
+        def test(): ...
 
-    .. versionadded:: 0.5.0
+        def other():
+            test = 1  # shadows `test()` function
 
-    See also:
-        https://docs.python-guide.org/writing/gotchas/#late-binding-closures
+    .. versionadded:: 0.12.0
 
     """
 
-    error_template = "Found `lambda` in loop's body"
+    error_template = 'Found outer scope names shadowing: {0}'
     code = 442
 
 
 @final
-class UnreachableCodeViolation(ASTViolation):
+class UnhashableTypeInHashViolation(ASTViolation):
     """
-    Forbids to have unreachable code.
-
-    What is unreachable code? It is some lines of code that
-    cannot be executed by python's interpreter.
-
-    This is probably caused by ``return`` or ``raise`` statements.
-    However, we can not cover 100% of truly unreachable code by this rule.
-    This happens due to the dynamic nature of python.
-    For example, detecting that ``1 / some_value`` would sometimes raise
-    an exception is too complicated and is out of the scope of this rule.
+    Forbids to use exlicit unhashable types as set items and dict keys.
 
     Reasoning:
-        Having dead code in your project is an indicator that you
-        do not care about your code base at all.
-        It dramatically reduces code quality and readability.
-        It also demotivates team members.
+        This will resolve in ``TypeError`` in runtime.
 
     Solution:
-        Delete any unreachable code you have.
-        Or refactor it, if this happens by your mistake.
+        Use hashable types to define set items and dict keys.
 
     Example::
 
         # Correct:
-        def some_function():
-            print('This line is reachable, all good')
-            return 5
+        my_dict = {1: {}, (1, 2): [], (2, 3): {1, 2}}
 
         # Wrong:
-        def some_function():
-            return 5
-            print('This line is unreachable')
+        my_dict = {[1, 2]: [], {2, 3}: {1, 2}}
 
-    .. versionadded:: 0.5.0
+    .. versionadded:: 0.12.0
 
     """
 
-    error_template = 'Found unreachable code'
+    error_template = 'Found unhashable item'
     code = 443
 
 
 @final
-class StatementHasNoEffectViolation(ASTViolation):
+class WrongKeywordConditionViolation(ASTViolation):
     """
-    Forbids to have statements that do nothing.
+    Forbids to use exlicit falsly-evaluated conditions with several keywords.
+
+    We check:
+
+    - ``ast.While``
+    - ``ast.Assert``
+
+    We only check constants. We do not check variables, attributes, calls, etc.
 
     Reasoning:
-        Statements that just access the value or expressions
-        used as statements indicate that your code
-        contains deadlines. They just pollute your codebase and do nothing.
+        Some conditions clearly tell us that this node won't work correctly.
+        So, we need to check that we can fix that.
 
     Solution:
-        Refactor your code in case it was a typo or error.
-        Or just delete this code.
+        Remove the unreachable node, or change the condition item.
 
     Example::
 
         # Correct:
-        def some_function():
-            price = 8 + 2
-            return price
+        assert some_variable
+
+        while True:
+            ...
 
         # Wrong:
-        def some_function():
-            8 + 2
-            print
+        assert []
 
-    .. versionadded:: 0.5.0
+        while False:
+            ...
+
+    .. versionadded:: 0.12.0
 
     """
 
-    error_template = 'Found statement that has no effect'
+    error_template = 'Found wrong keyword condition: {0}'
     code = 444
 
 
 @final
-class MultipleAssignmentsViolation(ASTViolation):
+class WrongNamedKeywordViolation(ASTViolation):
     """
-    Forbids to have multiple assignments on the same line.
+    Forbids to have wrong named keywords in starred dicts.
 
     Reasoning:
-        Multiple assignments on the same line might not do what you think
-        they do. They can also grown pretty long. And you will not notice
-        the rising complexity of your code.
+        Using wrong keywords in starred dict.
+        Eg.: ``print(**{'@': 1})``.
 
     Solution:
-        Use separate lines for each assignment.
+        Don't use incorrect identifiers for keywords.
 
     Example::
 
         # Correct:
-        a = 1
-        b = 1
+        print(**{'end': '|'})
 
         # Wrong:
-        a = b = 1
+        print(**{'3end': '|'})
 
-    .. versionadded:: 0.6.0
+    .. versionadded:: 0.13.0
 
     """
 
-    error_template = 'Found multiple assign targets'
     code = 445
+    error_template = 'Found wrong named keyword in starred dict'
 
 
 @final
-class IncorrectUnpackingViolation(ASTViolation):
+class ApproximateConstantViolation(ASTViolation):
     """
-    Forbids to have tuple unpacking with side-effects.
+    Forbids to use approximate constants.
 
     Reasoning:
-        Having unpacking with side-effects is very dirty.
-        You might get in serious and very hard-to-debug troubles because of
-        this technique. So, do not use it.
+        Some constants are already defined.
+        No need to write them again, use existing values.
+        We just compare numbers as strings and raise this violation
+        when they start with the same chars.
 
     Solution:
-        Use unpacking with only variables, not any other entities.
+        Use pre-defined constants.
 
     Example::
 
         # Correct:
-        first, second = some()
+        from math import pi
+        random_number = 3.15
+        too_short = 3.1
 
         # Wrong:
-        first, some_dict['alias'] = some()
+        pi = 3.14
 
-    .. versionadded:: 0.6.0
+    See
+    :py:data:`~wemake_python_styleguide.constants.MATH_APPROXIMATE_CONSTANTS`
+    for full list of math constants that we check for.
+
+    See also:
+        https://docs.python.org/3/library/math.html#constants
+
+    .. versionadded:: 0.13.0
 
     """
 
-    error_template = 'Found incorrect unpacking target'
     code = 446
+    error_template = 'Found approximate constant: {0}'
 
 
 @final
-class DuplicateExceptionViolation(ASTViolation):
+class StringConstantRedefinedViolation(ASTViolation):
     """
-    Forbids to have the same exception class in multiple ``except`` blocks.
+    Forbid to use alphabet as a string.
 
     Reasoning:
-        Having the same exception name in different blocks means
-        that something is not right: since only one branch will work.
-        Other one will always be ignored. So, that is clearly an error.
+        Some constants are already defined.
+        No need to write them again, use existing values.
+        We just compare strings and raise this violation
+        when they have exactly the same chars.
 
     Solution:
-        Use unique exception handling rules.
+        Use pre-defined constants.
 
     Example::
 
         # Correct:
-        try:
-            ...
-        except ValueError:
-            ...
+        import string
+        UPPERCASE_ALPH = string.ascii_uppercase
+        LOWERCASE_ALPH = string.ascii_lowercase
 
         # Wrong:
-        try:
-            ...
-        except ValueError:
-            ...
-        except ValueError:
-            ...
+        GUESS_MY_NAME = "abcde...WXYZ"
+        UPPERCASE_ALPH = "ABCD...WXYZ"
+        LOWERCASE_ALPH = "abcd...wxyz"
 
-    .. versionadded:: 0.6.0
+    .. versionadded:: 0.13.0
 
     """
 
-    error_template = 'Found duplicate exception: {0}'
+    error_template = 'Found alphabet as strings: {0}'
     code = 447
-
-
-@final
-class YieldInComprehensionViolation(ASTViolation):
-    """
-    Forbids to have ``yield`` keyword inside comprehensions.
-
-    Reasoning:
-        Having the ``yield`` keyword inside comprehensions is error-prone.
-        You can shoot yourself in a foot by
-        an inaccurate usage of this feature.
-
-    Solution:
-        Use regular ``for`` loops with ``yield`` keywords.
-        Or create a separate generator function.
-
-    Example::
-
-        # Wrong:
-        >>> list((yield letter) for letter in 'ab')
-        ['a', None, 'b', None]
-
-        >>> list([(yield letter) for letter in 'ab'])
-        ['a', 'b']
-
-
-    See also:
-        https://github.com/satwikkansal/wtfPython#-yielding-none
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found `yield` inside comprehension'
-    code = 448
-
-
-@final
-class NonUniqueItemsInSetViolation(ASTViolation):
-    """
-    Forbids to have duplicate items in ``set`` literals.
-
-    Reasoning:
-        When you explicitly put duplicate items in ``set`` literals
-        it just does not make any sense. Since ``set`` can not contain
-        duplicate items and they will be removed anyway.
-
-    Solution:
-        Remove the duplicate items.
-
-    Example::
-
-        # Correct:
-        some_set = {'a', variable1}
-        some_set = {make_call(), make_call()}
-
-        # Wrong:
-        some_set = {'a', 'a', variable1, variable1}
-
-    Things that we consider duplicates: builtins and variables.
-    These nodes are not checked because they may return different results:
-
-    - function and method calls
-    - comprehensions
-    - attributes
-    - subscribe operations
-    - containers: lists, dicts, tuples, sets
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found non-unique item in `set` literal: {0}'
-    code = 449
-
-
-@final
-class BaseExceptionSubclassViolation(ASTViolation):
-    """
-    Forbids to have duplicate items in ``set`` literals.
-
-    Reasoning:
-        ``BaseException`` is a special case:
-        it is not designed to be extended by users.
-        A lot of your ``except Exception`` cases won't work.
-        That's incorrect and dangerous.
-
-    Solution:
-        Change the base class to ``Exception``.
-
-    Example::
-
-        # Correct:
-        class MyException(Exception):
-            ...
-
-        # Wrong:
-        class MyException(BaseException):
-            ...
-
-    See also:
-        https://docs.python.org/3/library/exceptions.html#exception-hierarchy
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found exception inherited from `BaseException`'
-    code = 450
-
-
-@final
-class SimplifiableIfViolation(ASTViolation):
-    """
-    Forbids to have simplifiable ``if`` conditions.
-
-    Reasoning:
-        This complex construction can cause frustration among other developers.
-        It is longer, more verbose, and more complex.
-
-    Solution:
-        Use ``bool()`` to convert test values to boolean values.
-        Or just leave it as it is in case
-        when your test already returns a boolean value.
-        Use can also use ``not`` keyword to switch boolean values.
-
-    Example::
-
-        # Correct:
-        my_bool = bool(some_call())
-        other_value = 8 if some_call() else None
-
-        # Wrong:
-        my_bool = True if some_call() else False
-
-    We only check ``if`` nodes where ``True`` and ``False`` values are used.
-    We check both ``if`` nodes and ``if`` expressions.
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found simplifiable `if` condition'
-    code = 451
-
-
-@final
-class IncorrectClassBodyContentViolation(ASTViolation):
-    """
-    Forbids to use incorrect nodes inside ``class`` definitions.
-
-    Reasoning:
-        Python allows us to have conditions, context managers,
-        and even infinite loops inside ``class`` definitions.
-        On the other hand, only methods, attributes, and docstrings make sense.
-        So, we discourage using anything except these nodes in class bodies.
-
-    Solution:
-        If you have complex logic inside your class definition,
-        most likely that you do something wrong.
-        There are different options to refactor this mess.
-        You can try metaclasses, decorators, builders, and other patterns.
-
-    Example::
-
-        # Wrong:
-        class Test(object):
-            for _ in range(10):
-                print('What?!')
-
-    We also allow some nested classes,
-    check out :class:`NestedClassViolation` for more information.
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found incorrect node inside `class` body'
-    code = 452
-
-
-@final
-class MethodWithoutArgumentsViolation(ASTViolation):
-    """
-    Forbids to have methods without any arguments.
-
-    Reasoning:
-        Methods without arguments are allowed to be defined,
-        but almost impossible to use.
-        Furthermore, they don't have an access to ``self``,
-        so can not access the inner state of the object.
-        It might be an intentional design or just a typo.
-
-    Solution:
-        Move any methods with arguments to raw functions.
-        Or just add an argument if it is actually required.
-
-    Example::
-
-        # Correct:
-        class Test(object):
-            def method(self): ...
-
-        # Wrong:
-        class Test(object):
-            def method(): ...
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found method without arguments: {0}'
-    code = 453
-
-
-@final
-class IncorrectBaseClassViolation(ASTViolation):
-    """
-    Forbids to have anything else than a class as a base class.
-
-    Reasoning:
-        In Python you can specify anything in the base classes slot.
-        In runtime this expression will be evaluated and executed.
-        We need to prevent dirty hacks in this field.
-
-    Solution:
-        Use only attributes, names, and types to be your base classes.
-
-    Example::
-
-        # Correct:
-        class Test(module.ObjectName, MixinName, keyword=True): ...
-        class GenericClass(Generic[ValueType]): ...
-
-        # Wrong:
-        class Test((lambda: object)()): ...
-
-    .. versionadded:: 0.7.0
-    .. versionchanged:: 0.7.1
-
-    """
-
-    error_template = 'Found incorrect base class'
-    code = 454
-
-
-@final
-class IncorrectSlotsViolation(ASTViolation):
-    """
-    Forbids to have incorrect ``__slots__`` definition.
-
-    Reasoning:
-        ``__slots__`` is a very special attribute.
-        It completely changes your class. So, we need to be careful with it.
-        We should not allow anything rather than tuples to define slots,
-        we also need to check that fields defined in ``__slots__`` are unique.
-
-    Solution:
-        Use tuples with unique elements to define ``__slots__`` attribute.
-
-    Example::
-
-        # Correct:
-        class Test(object):
-            __slots__ = ('field1', 'field2')
-
-        class Other(Test):
-            __slots__ = Test.__slots__ + ('child',)
-
-        # Wrong:
-        class Test(object):
-            __slots__ = ['field1', 'field2', 'field2']
-
-    Note, that we do ignore all complex expressions for this field.
-    So, we only check raw literals.
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found incorrect `__slots__` syntax'
-    code = 455
-
-
-@final
-class IncorrectSuperCallViolation(ASTViolation):
-    """
-    Forbids to use ``super()`` with parameters or outside of methods.
-
-    Reasoning:
-        ``super()`` is a very special function.
-        It implicitly relies on the context where it is used
-        and parameters passed to it.
-        So, we should be very careful with parameters and context.
-
-    Solution:
-        Use ``super()`` without arguments and only inside methods.
-
-    Example::
-
-        # Correct:
-        super().__init__()
-
-        # Wrong:
-        super(ClassName, self).__init__()
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found incorrect `super()` call: {0}'
-    code = 456
-
-
-@final
-class RedundantReturningElseViolation(ASTViolation):
-    """
-    Forbids to use redundant ``else`` cases in returning functions.
-
-    We check single ``if`` statements that all contain
-    ``return`` or ``raise`` or ``break`` statements with this rule.
-    We do not check ``if`` statements with ``elif`` cases.
-
-    Reasoning:
-        Using extra ``else`` creates a situation when
-        the whole node could and should be dropped
-        without any changes in logic.
-        So, we prefer to have less code than more code.
-
-    Solution:
-        Remove redundant ``else`` case.
-
-    Example::
-
-        # Correct:
-        def some_function():
-            if some_call():
-                return 'yeap'
-            return 'nope'
-
-        # Wrong:
-        def some_function():
-            if some_call():
-                raise ValueError('yeap')
-            else:
-                raise ValueError('nope')
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found redundant returning `else` statement'
-    code = 457
-
-
-@final
-class TryExceptMultipleReturnPathViolation(ASTViolation):
-    """
-    Forbids to use multiple ``return`` path with ``try`` / ``except`` case.
-
-    Reasoning:
-        The problem with ``return`` in ``else`` and ``finally``
-        is that it is impossible to say what value is going to be actually
-        returned without looking up the implementation details. Why?
-        Because ``return`` does not expect
-        that some other code will be executed after it.
-        But, ``finally`` is always executed, even after ``return``.
-        And ``else`` will not be executed when there are no exceptions
-        in ``try`` case and a ``return`` statement.
-
-    Solution:
-        Remove ``return`` from one of the cases.
-
-    Example::
-
-        # Wrong:
-        try:
-            return 1  # this line will never return
-        except Exception:
-            ...
-        finally:
-            return 2  # this line will actually return
-
-        try:
-            return 1  # this line will actually return
-        except ZeroDivisionError:
-            ...
-        else:
-            return 0  # this line will never return
-
-    .. versionadded:: 0.7.0
-
-    """
-
-    error_template = 'Found `try`/`else`/`finally` with multiple return paths'
-    code = 458
-
-
-@final
-class ComplexDefaultValuesViolation(ASTViolation):
-    """
-    Forbids to use complex defaults.
-
-    Anything that is not a ``ast.Name``, ``ast.Attribute``, ``ast.Str``,
-    ``ast.NameConstant``, ``ast.Tuple``, ``ast.Bytes``, ``ast.Num``
-    or ``ast.Ellipsis`` should be moved out from defaults.
-
-    Reasoning:
-        It can be tricky. Nothing stops you from making database calls or http
-        requests in such expressions. It is also not readable for us.
-
-    Solution:
-        Move the expression out from default value.
-
-    Example::
-
-        # Correct:
-        SHOULD_USE_DOCTEST = 'PYFLAKES_DOCTEST' in os.environ
-        def __init__(self, with_doctest=SHOULD_USE_DOCTEST):
-
-        # Wrong:
-        def __init__(self, with_doctest='PYFLAKES_DOCTEST' in os.environ):
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found complex default value'
-    code = 459
-
-
-@final
-class LoopVariableDefinitionViolation(ASTViolation):
-    """
-    Forbids to use anything rather than ``ast.Name`` to define loop variables.
-
-    Reasoning:
-        When defining a ``for`` loop with attributes, indexes, calls,
-        or any other nodes it does dirty things inside.
-
-    Solution:
-        Use regular ``ast.Name`` variables.
-        Or tuple of ``ast.Name`` variables.
-
-    Example::
-
-        # Correct:
-        for person in database.people():
-            ...
-
-        # Wrong:
-        for context['pepson'] in database.people():
-            ...
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found wrong `for` loop variable definition'
-    code = 460
-
-
-@final
-class ContextManagerVariableDefinitionViolation(ASTViolation):
-    """
-    Forbids to use anything rather than ``ast.Name`` to define contexts.
-
-    Reasoning:
-        When defining a ``with`` context managers with attributes,
-        indexes, calls, or any other nodes it does dirty things inside.
-
-    Solution:
-        Use regular ``ast.Name`` variables.
-
-    Example::
-
-        # Correct:
-        with open('README.md') as readme:
-            ...
-
-        # Wrong:
-        with open('README.md') as files['readme']:
-            ...
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found wrong context manager variable definition'
-    code = 461
-
-
-@final
-class DirectMagicAttributeAccessViolation(ASTViolation):
-    """
-    Forbids to use direct magic attributes and methods.
-
-    Reasoning:
-        When using direct magic attributes or method
-        it means that you are doing something wrong.
-        Magic methods are not suited to be directly called or accessed.
-
-    Solution:
-        Use special syntax constructs that will call underlying magic methods.
-
-    Example::
-
-        # Correct:
-        super().__init__()
-
-        # Wrong:
-        2..__truediv__(2)
-        d.__delitem__('a')
-
-    Note, that it is possible to use direct magic attributes with
-    ``self``, ``cls``, and ``super()`` as base names.
-    We allow this because a lot of internal logic relies on these methods.
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found direct magic attribute usage: {0}'
-    code = 462
-
-
-@final
-class NegatedConditionsViolation(ASTViolation):
-    """
-    Forbids to use negated conditions together with ``else`` clause.
-
-    Reasoning:
-        It easier to read and name regular conditions. Not negated ones.
-
-    Solution:
-        Move actions from the negated ``if`` condition to the ``else``
-        condition.
-
-    Example::
-
-        # Correct:
-        if some == 1:
-             ...
-        else:
-             ...
-
-        if not some:
-             ...
-
-        # Wrong:
-        if not some:
-             ...
-        else:
-             ...
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found negated condition'
-    code = 463
-
-
-@final
-class NestedTryViolation(ASTViolation):
-    """
-    Forbids to use nested ``try`` blocks.
-
-    Notice, we check all possible slots for ``try`` block:
-    1. the ``try`` block itself
-    2. all ``except`` cases
-    3. ``else`` case
-    4. and ``finally`` case
-
-    Reasoning:
-        Nesting ``try`` blocks indicates
-        that something really bad happens to your logic.
-        Why does it require two separate exception handlers?
-        It is a perfect case to refactor your code.
-
-    Solution:
-        Collapse two exception handlers together.
-        Or create a separate function that will handle this second nested case.
-
-    Example::
-
-        # Wrong:
-        try:
-            try:
-                ...
-            except SomeException:
-                ...
-        except SomeOtherException:
-            ...
-
-        try:
-            ...
-        except SomeOtherException:
-            try:
-                ...
-            except SomeException:
-                ...
-
-    .. versionadded:: 0.8.0
-
-    """
-
-    error_template = 'Found nested `try` block'
-    code = 464
-
-
-@final
-class MultilineConditionsViolation(ASTViolation):
-    """
-    Forbid multiline conditions.
-
-    Reasoning:
-        This way of writing conditions hides the inner complexity this line has.
-        And it decreases readability of the code.
-
-    Solution:
-        Divide multiline conditions to some ``if`` condition. Or use variables.
-
-    Example::
-
-        # Correct:
-        if isinstance(node.test, ast.UnaryOp):
-            if isinstance(node.test.op, ast.Not):
-                ...
-
-
-        # Wrong:
-        if isinstance(node.test, ast.UnaryOp) and isinstance(
-            node.test.op,
-            ast.Not,
-        ):
-            ...
-
-    .. versionadded:: 0.9.0
-
-    """
-
-    error_template = 'Found multiline conditions'
-    code = 465
-
-
-@final
-class MutableModuleConstantViolation(ASTViolation):
-    """
-    Forbid mutable constants on a module level.
-
-    Reasoning:
-        Constants should be immutable.
-
-    Solution:
-        Use immutable types for constants.
-
-    We only treat ``ast.Set``, ``ast.Dict``, ``ast.List``, and comprehensions
-    as mutable things. All other nodes are still fine.
-
-    Example::
-
-        # Correct:
-        import types
-        CONST1 = frozenset((1, 2, 3))
-        CONST2 = (1, 2, 3)
-        CONST3 = types.MappingProxyType({'key': 'value'})
-
-        # Wrong:
-        CONST1 = {1, 2, 3}
-        CONST2 = [1, 2, 3]
-        CONST3 = {'key': 'value'}
-
-    .. versionadded:: 0.10.0
-
-    """
-
-    error_template = 'Found mutable module constant'
-    code = 466

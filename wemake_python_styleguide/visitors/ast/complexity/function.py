@@ -2,20 +2,23 @@
 
 import ast
 from collections import defaultdict
-from typing import ClassVar, DefaultDict, List
+from typing import ClassVar, DefaultDict, Dict, List, Tuple, Type, Union
 
 from typing_extensions import final
 
-from wemake_python_styleguide.constants import UNUSED_VARIABLE
-from wemake_python_styleguide.logics import functions
-from wemake_python_styleguide.logics.nodes import get_parent
+from wemake_python_styleguide.logic import functions
+from wemake_python_styleguide.logic.naming import access
+from wemake_python_styleguide.logic.nodes import get_parent
 from wemake_python_styleguide.types import (
     AnyFunctionDef,
     AnyFunctionDefAndLambda,
     AnyNodes,
 )
+from wemake_python_styleguide.violations.base import BaseViolation
 from wemake_python_styleguide.violations.complexity import (
     TooManyArgumentsViolation,
+    TooManyAssertsViolation,
+    TooManyAwaitsViolation,
     TooManyExpressionsViolation,
     TooManyLocalsViolation,
     TooManyReturnsViolation,
@@ -23,8 +26,14 @@ from wemake_python_styleguide.violations.complexity import (
 from wemake_python_styleguide.visitors.base import BaseNodeVisitor
 from wemake_python_styleguide.visitors.decorators import alias
 
-FunctionCounter = DefaultDict[AnyFunctionDef, int]
-FunctionCounterWithLambda = DefaultDict[AnyFunctionDefAndLambda, int]
+_FunctionCounter = DefaultDict[AnyFunctionDef, int]
+_FunctionCounterWithLambda = DefaultDict[AnyFunctionDefAndLambda, int]
+_AnyFunctionCounter = Union[_FunctionCounter, _FunctionCounterWithLambda]
+_CheckRule = Tuple[_AnyFunctionCounter, int, Type[BaseViolation]]
+_NodeTypeHandler = Dict[
+    Union[type, Tuple[type, ...]],
+    _FunctionCounter,
+]
 
 
 @final
@@ -36,44 +45,14 @@ class _ComplexityCounter(object):
     )
 
     def __init__(self) -> None:
-        self.arguments: FunctionCounterWithLambda = defaultdict(int)
-        self.returns: FunctionCounter = defaultdict(int)
-        self.expressions: FunctionCounter = defaultdict(int)
-        self.variables: DefaultDict[
-            AnyFunctionDef, List[str],
-        ] = defaultdict(list)
-
-    def _update_variables(
-        self,
-        function: AnyFunctionDef,
-        variable_def: ast.Name,
-    ) -> None:
-        """
-        Increases the counter of local variables.
-
-        What is treated as a local variable?
-        Check ``TooManyLocalsViolation`` documentation.
-        """
-        function_variables = self.variables[function]
-        if variable_def.id not in function_variables:
-            if variable_def.id == UNUSED_VARIABLE:
-                return
-
-            if isinstance(get_parent(variable_def), self._not_contain_locals):
-                return
-
-            function_variables.append(variable_def.id)
-
-    def _check_sub_node(self, node: AnyFunctionDef, sub_node) -> None:
-        is_variable = isinstance(sub_node, ast.Name)
-        context = getattr(sub_node, 'ctx', None)
-
-        if is_variable and isinstance(context, ast.Store):
-            self._update_variables(node, sub_node)
-        elif isinstance(sub_node, ast.Return):
-            self.returns[node] += 1
-        elif isinstance(sub_node, ast.Expr):
-            self.expressions[node] += 1
+        self.awaits: _FunctionCounter = defaultdict(int)  # noqa: WPS204
+        self.arguments: _FunctionCounterWithLambda = defaultdict(int)
+        self.asserts: _FunctionCounter = defaultdict(int)
+        self.returns: _FunctionCounter = defaultdict(int)
+        self.expressions: _FunctionCounter = defaultdict(int)
+        self.variables: DefaultDict[AnyFunctionDef, List[str]] = defaultdict(
+            list,
+        )
 
     def check_arguments_count(self, node: AnyFunctionDefAndLambda) -> None:
         """Checks the number of the arguments in a function."""
@@ -88,6 +67,47 @@ class _ComplexityCounter(object):
         for body_item in node.body:
             for sub_node in ast.walk(body_item):
                 self._check_sub_node(node, sub_node)
+
+    def _update_variables(
+        self,
+        function: AnyFunctionDef,
+        variable_def: ast.Name,
+    ) -> None:
+        """
+        Increases the counter of local variables.
+
+        What is treated as a local variable?
+        Check ``TooManyLocalsViolation`` documentation.
+        """
+        function_variables = self.variables[function]
+        if variable_def.id not in function_variables:
+            if access.is_unused(variable_def.id):
+                return
+
+            if isinstance(get_parent(variable_def), self._not_contain_locals):
+                return
+
+            function_variables.append(variable_def.id)
+
+    def _check_sub_node(
+        self,
+        node: AnyFunctionDef,
+        sub_node: ast.AST,
+    ) -> None:
+        if isinstance(sub_node, ast.Name):
+            if isinstance(sub_node.ctx, ast.Store):
+                self._update_variables(node, sub_node)
+
+        error_counters: _NodeTypeHandler = {
+            ast.Return: self.returns,
+            ast.Expr: self.expressions,
+            ast.Await: self.awaits,
+            ast.Assert: self.asserts,
+        }
+
+        for types, counter in error_counters.items():
+            if isinstance(sub_node, types):
+                counter[node] += 1
 
 
 @final
@@ -113,36 +133,6 @@ class FunctionComplexityVisitor(BaseNodeVisitor):
         super().__init__(*args, **kwargs)
         self._counter = _ComplexityCounter()
 
-    def _check_function_internals(self) -> None:
-        for node, variables in self._counter.variables.items():
-            if len(variables) > self.options.max_local_variables:
-                self.add_violation(
-                    TooManyLocalsViolation(node, text=str(len(variables))),
-                )
-
-        for node, expressions in self._counter.expressions.items():
-            if expressions > self.options.max_expressions:
-                self.add_violation(
-                    TooManyExpressionsViolation(node, text=str(expressions)),
-                )
-
-    def _check_function_signature(self) -> None:
-        for node, arguments in self._counter.arguments.items():
-            if arguments > self.options.max_arguments:
-                self.add_violation(
-                    TooManyArgumentsViolation(node, text=str(arguments)),
-                )
-
-        for node, returns in self._counter.returns.items():
-            if returns > self.options.max_returns:
-                self.add_violation(
-                    TooManyReturnsViolation(node, text=str(returns)),
-                )
-
-    def _post_visit(self) -> None:
-        self._check_function_signature()
-        self._check_function_internals()
-
     def visit_any_function(self, node: AnyFunctionDef) -> None:
         """
         Checks function's internal complexity.
@@ -152,6 +142,7 @@ class FunctionComplexityVisitor(BaseNodeVisitor):
             TooManyReturnsViolation
             TooManyLocalsViolation
             TooManyArgumentsViolation
+            TooManyAwaitsViolation
 
         """
         self._counter.check_arguments_count(node)
@@ -168,3 +159,53 @@ class FunctionComplexityVisitor(BaseNodeVisitor):
         """
         self._counter.check_arguments_count(node)
         self.generic_visit(node)
+
+    def _check_function_internals(self) -> None:
+        for var_node, variables in self._counter.variables.items():
+            if len(variables) > self.options.max_local_variables:
+                self.add_violation(
+                    TooManyLocalsViolation(var_node, text=str(len(variables))),
+                )
+
+        for exp_node, expressions in self._counter.expressions.items():
+            if expressions > self.options.max_expressions:
+                self.add_violation(
+                    TooManyExpressionsViolation(
+                        exp_node,
+                        text=str(expressions),
+                    ),
+                )
+
+    def _check_function_signature(self) -> None:
+        for counter, limit, violation in self._function_checks():
+            for node, count_result in counter.items():
+                if count_result > limit:
+                    self.add_violation(violation(node, text=str(count_result)))
+
+    def _function_checks(self) -> List[_CheckRule]:
+        return [
+            (
+                self._counter.arguments,
+                self.options.max_arguments,
+                TooManyArgumentsViolation,
+            ),
+            (
+                self._counter.returns,
+                self.options.max_returns,
+                TooManyReturnsViolation,
+            ),
+            (
+                self._counter.awaits,
+                self.options.max_awaits,
+                TooManyAwaitsViolation,
+            ),
+            (
+                self._counter.asserts,
+                self.options.max_asserts,
+                TooManyAssertsViolation,
+            ),
+        ]
+
+    def _post_visit(self) -> None:
+        self._check_function_signature()
+        self._check_function_internals()

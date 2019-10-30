@@ -3,6 +3,10 @@
 import ast
 from typing import Optional, Tuple, Type
 
+from wemake_python_styleguide.compat.aliases import FunctionNodes
+from wemake_python_styleguide.logic.nodes import get_parent
+from wemake_python_styleguide.types import ContextNodes
+
 
 def set_if_chain(tree: ast.AST) -> ast.AST:
     """
@@ -27,11 +31,14 @@ def set_if_chain(tree: ast.AST) -> ast.AST:
     actually working with nodes. So, we need a simple way to separate them.
     """
     for statement in ast.walk(tree):
+        if not isinstance(statement, ast.If):
+            continue
+
         for child in ast.iter_child_nodes(statement):
-            if isinstance(statement, ast.If) and isinstance(child, ast.If):
+            if isinstance(child, ast.If):
                 if child in statement.orelse:
-                    setattr(statement, 'wps_chained', True)  # noqa: Z425
-                    setattr(child, 'wps_chain', statement)  # noqa: B010
+                    setattr(statement, 'wps_if_chained', True)  # noqa: WPS425
+                    setattr(child, 'wps_if_chain', statement)  # noqa: B010
     return tree
 
 
@@ -42,7 +49,8 @@ def set_node_context(tree: ast.AST) -> ast.AST:
     What we call "a context"?
     Context is where exactly this node belongs on a global level.
 
-    Example::
+    Example:
+    .. code:: python
 
         if some_value > 2:
             test = 'passed'
@@ -59,11 +67,10 @@ def set_node_context(tree: ast.AST) -> ast.AST:
     .. versionchanged:: 0.8.1
 
     """
-    contexts = (
+    contexts: Tuple[Type[ContextNodes], ...] = (
         ast.Module,
         ast.ClassDef,
-        ast.FunctionDef,
-        ast.AsyncFunctionDef,
+        *FunctionNodes,
     )
 
     for statement in ast.walk(tree):
@@ -82,10 +89,9 @@ def _find_context(
     It happened because of the bug #520
     See: https://github.com/wemake-services/wemake-python-styleguide/issues/520
     """
-    parent = getattr(node, 'wps_parent', None)
+    parent = get_parent(node)
     if parent is None:
         return None
     elif isinstance(parent, contexts):
         return parent
-    else:
-        return _find_context(parent, contexts)
+    return _find_context(parent, contexts)

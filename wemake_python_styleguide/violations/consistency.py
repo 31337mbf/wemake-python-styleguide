@@ -33,13 +33,13 @@ Summary
    FormattedStringViolation
    RequiredBaseClassViolation
    MultipleIfsInComprehensionViolation
-   ConstantComparisonViolation
-   ComparisonOrderViolation
+   ConstantCompareViolation
+   CompareOrderViolation
    BadNumberSuffixViolation
-   MultipleInComparisonViolation
-   RedundantComparisonViolation
+   MultipleInCompareViolation
+   UselessCompareViolation
    MissingSpaceBetweenKeywordAndParenViolation
-   WrongConditionalViolation
+   ConstantConditionViolation
    ObjectInBaseClassesListViolation
    MultipleContextManagerAssignmentsViolation
    ParametersIndentationViolation
@@ -47,7 +47,7 @@ Summary
    WrongBracketPositionViolation
    MultilineFunctionAnnotationViolation
    UppercaseStringModifierViolation
-   IncorrectMultilineStringViolation
+   WrongMultilineStringViolation
    EmptyLineAfterCodingViolation
    InconsistentReturnViolation
    InconsistentYieldViolation
@@ -57,6 +57,27 @@ Summary
    UselessExceptCaseViolation
    UselessOperatorsViolation
    InconsistentReturnVariableViolation
+   ImplicitTernaryViolation
+   ImplicitComplexCompareViolation
+   ReversedComplexCompareViolation
+   WrongLoopIterTypeViolation
+   ExplicitStringConcatViolation
+   MultilineConditionsViolation
+   WrongMethodOrderViolation
+   NumberWithMeaninglessZeroViolation
+   PositiveExponentViolation
+   WrongHexNumberCaseViolation
+   ImplicitRawStringViolation
+   BadComplexNumberSuffixViolation
+   ZeroDivisionViolation
+   MeaninglessNumberOperationViolation
+   OperationSignNegationViolation
+   VagueImportViolation
+   AdditionAssignmentOnListViolation
+   RedundantSubscriptViolation
+   AugmentedAssignPatternViolation
+   UnnecessaryLiteralsViolation
+   MultilineLoopViolation
 
 Consistency checks
 ------------------
@@ -69,13 +90,13 @@ Consistency checks
 .. autoclass:: FormattedStringViolation
 .. autoclass:: RequiredBaseClassViolation
 .. autoclass:: MultipleIfsInComprehensionViolation
-.. autoclass:: ConstantComparisonViolation
-.. autoclass:: ComparisonOrderViolation
+.. autoclass:: ConstantCompareViolation
+.. autoclass:: CompareOrderViolation
 .. autoclass:: BadNumberSuffixViolation
-.. autoclass:: MultipleInComparisonViolation
-.. autoclass:: RedundantComparisonViolation
+.. autoclass:: MultipleInCompareViolation
+.. autoclass:: UselessCompareViolation
 .. autoclass:: MissingSpaceBetweenKeywordAndParenViolation
-.. autoclass:: WrongConditionalViolation
+.. autoclass:: ConstantConditionViolation
 .. autoclass:: ObjectInBaseClassesListViolation
 .. autoclass:: MultipleContextManagerAssignmentsViolation
 .. autoclass:: ParametersIndentationViolation
@@ -83,7 +104,7 @@ Consistency checks
 .. autoclass:: WrongBracketPositionViolation
 .. autoclass:: MultilineFunctionAnnotationViolation
 .. autoclass:: UppercaseStringModifierViolation
-.. autoclass:: IncorrectMultilineStringViolation
+.. autoclass:: WrongMultilineStringViolation
 .. autoclass:: EmptyLineAfterCodingViolation
 .. autoclass:: InconsistentReturnViolation
 .. autoclass:: InconsistentYieldViolation
@@ -93,6 +114,27 @@ Consistency checks
 .. autoclass:: UselessExceptCaseViolation
 .. autoclass:: UselessOperatorsViolation
 .. autoclass:: InconsistentReturnVariableViolation
+.. autoclass:: ImplicitTernaryViolation
+.. autoclass:: ImplicitComplexCompareViolation
+.. autoclass:: ReversedComplexCompareViolation
+.. autoclass:: WrongLoopIterTypeViolation
+.. autoclass:: ExplicitStringConcatViolation
+.. autoclass:: MultilineConditionsViolation
+.. autoclass:: WrongMethodOrderViolation
+.. autoclass:: NumberWithMeaninglessZeroViolation
+.. autoclass:: PositiveExponentViolation
+.. autoclass:: WrongHexNumberCaseViolation
+.. autoclass:: ImplicitRawStringViolation
+.. autoclass:: BadComplexNumberSuffixViolation
+.. autoclass:: ZeroDivisionViolation
+.. autoclass:: MeaninglessNumberOperationViolation
+.. autoclass:: OperationSignNegationViolation
+.. autoclass:: VagueImportViolation
+.. autoclass:: AdditionAssignmentOnListViolation
+.. autoclass:: RedundantSubscriptViolation
+.. autoclass:: AugmentedAssignPatternViolation
+.. autoclass:: UnnecessaryLiteralsViolation
+.. autoclass:: MultilineLoopViolation
 
 """
 
@@ -315,6 +357,9 @@ class RequiredBaseClassViolation(ASTViolation):
         # Wrong:
         class Some: ...
 
+    See also:
+        https://google.github.io/styleguide/pyguide.html#39-classes
+
     .. versionadded:: 0.1.0
 
     """
@@ -354,17 +399,17 @@ class MultipleIfsInComprehensionViolation(ASTViolation):
 
 
 @final
-class ConstantComparisonViolation(ASTViolation):
+class ConstantCompareViolation(ASTViolation):
     """
-    Forbids to have comparisons between two literals.
+    Forbids to have compares between two literals.
 
     Reasoning:
         When two constants are compared it is typically an indication of a
-        mistake, since the Boolean value of the comparison, will always be
+        mistake, since the Boolean value of the compare, will always be
         the same.
 
     Solution:
-        Remove the constant comparison and any associated dead code.
+        Remove the constant compare and any associated dead code.
 
     Example::
 
@@ -381,22 +426,22 @@ class ConstantComparisonViolation(ASTViolation):
 
     """
 
-    error_template = 'Found constant comparison'
+    error_template = 'Found constant compare'
     code = 308
 
 
 @final
-class ComparisonOrderViolation(ASTViolation):
+class CompareOrderViolation(ASTViolation):
     """
-    Forbids comparision where argument doesn't come first.
+    Forbids comparison where argument doesn't come first.
 
     Reasoning:
         It is hard to read the code when
         you have to shuffle ordering of the arguments all the time.
-        Bring consistency to the comparison!
+        Bring consistency to the compare!
 
     Solution:
-        Refactor your comparison expression, place the argument first.
+        Refactor your compare expression, place the argument first.
 
     Example::
 
@@ -411,7 +456,7 @@ class ComparisonOrderViolation(ASTViolation):
 
     """
 
-    error_template = 'Found reversed comparison order'
+    error_template = 'Found reversed compare order'
     code = 309
 
 
@@ -429,7 +474,7 @@ class BadNumberSuffixViolation(TokenizeViolation):
 
     Solution:
         Octal, hex, binary and scientific notation suffixes in numbers
-        should be written lowercase.
+        should be written in lowercase.
 
     Example::
 
@@ -454,47 +499,48 @@ class BadNumberSuffixViolation(TokenizeViolation):
 
 
 @final
-class MultipleInComparisonViolation(ASTViolation):
+class MultipleInCompareViolation(ASTViolation):
     """
-    Forbids comparision where multiple ``in`` checks.
+    Forbids comparison where multiple ``in`` checks.
 
     Reasoning:
         Using multiple ``in`` is unreadable.
 
     Solution:
-        Refactor your comparison expression to use several ``and`` conditions
+        Refactor your compare expression to use several ``and`` conditions
         or separate ``if`` statements in case it is appropriate.
 
     Example::
 
         # Correct:
         if item in bucket and bucket in master_list_of_buckets:
-        if x_coord in line and line in square:
+        if x_coord not in line and line not in square:
 
         # Wrong:
         if item in bucket in master_list_of_buckets:
-        if x_cord in line in square:
+        if x_cord not in line not in square:
 
     .. versionadded:: 0.3.0
+    .. versionchanged:: 0.10.0
 
     """
 
-    error_template = 'Found multiple `in` comparisons'
+    error_template = 'Found multiple `in` compares'
     code = 311
 
 
 @final
-class RedundantComparisonViolation(ASTViolation):
+class UselessCompareViolation(ASTViolation):
     """
-    Forbids to have comparisons between the same variable.
+    Forbids to have compares between the same variable.
 
     Reasoning:
         When the same variables are compared it is typically an indication
-        of a mistake, since the Boolean value of the comparison will always be
+        of a mistake, since the Boolean value of the compare will always be
         the same.
 
     Solution:
-        Remove the same variable comparison and any associated dead code.
+        Remove the same variable compare and any associated dead code.
 
     Example::
 
@@ -512,7 +558,7 @@ class RedundantComparisonViolation(ASTViolation):
 
     """
 
-    error_template = 'Found comparison between same variable'
+    error_template = 'Found compare between same variable'
     code = 312
 
 
@@ -552,7 +598,7 @@ class MissingSpaceBetweenKeywordAndParenViolation(TokenizeViolation):
 
 
 @final
-class WrongConditionalViolation(ASTViolation):
+class ConstantConditionViolation(ASTViolation):
     """
     Forbids using ``if`` statements that use invalid conditionals.
 
@@ -739,6 +785,14 @@ class ExtraIndentationViolation(TokenizeViolation):
         def test():
                     print('test')
 
+    This rule is consistent with the "Vertical Hanging Indent" option for
+    ``multi_line_output`` setting of ``isort``. To avoid conflicting rules,
+    you should set ``multi_line_output = 3`` in the ``isort`` settings.
+
+    See also:
+        https://github.com/timothycrosley/isort#multi-line-output-modes
+        https://github.com/wemake-services/wemake-python-styleguide/blob/master/styles/isort.toml
+
     .. versionadded:: 0.6.0
 
     """
@@ -750,17 +804,15 @@ class ExtraIndentationViolation(TokenizeViolation):
 @final
 class WrongBracketPositionViolation(TokenizeViolation):
     """
-    Forbids to use extra indentation.
+    Forbids to have brackets in the wrong position.
 
     Reasoning:
-        You can use extra indentation for lines of code.
-        Python allows you to do that in case you will keep the indentation
-        level equal for this specific node.
-        But, that's insane!
+        You can do bizzare things with bracket positioning in python.
+        We require all brackets to be consistent.
 
     Solution:
-        Place bracket on the same line, when a single line expression.
-        Or place the bracket on a new line when a multi-line expression.
+        Place bracket on the same line, in case of a single line expression.
+        Or place the bracket on a new line in case of a multi-line expression.
 
     Example::
 
@@ -845,7 +897,7 @@ class UppercaseStringModifierViolation(TokenizeViolation):
         String modifiers should be consistent.
 
     Solution:
-        Use lowercase modifiers should be written in lowercase.
+        Use lowercase modifiers.
 
     Example::
 
@@ -866,7 +918,7 @@ class UppercaseStringModifierViolation(TokenizeViolation):
 
 
 @final
-class IncorrectMultilineStringViolation(TokenizeViolation):
+class WrongMultilineStringViolation(TokenizeViolation):
     '''
     Forbids to use triple quotes for singleline strings.
 
@@ -986,11 +1038,6 @@ class InconsistentReturnViolation(ASTViolation):
                 return
             return 1
 
-        def function():
-            if some:
-                print(some)
-            return
-
     .. versionadded:: 0.7.0
 
     """
@@ -1043,10 +1090,10 @@ class InconsistentYieldViolation(ASTViolation):
 @final
 class ImplicitStringConcatenationViolation(TokenizeViolation):
     """
-    Forbids to use implicit string contacatenation.
+    Forbids to use implicit string concatenation.
 
     Reasoning:
-        This is error-prone, since you can possible miss a comma
+        This is error-prone, since you can possibly miss a comma
         in a collection of string and get an implicit concatenation.
         And because there are different and safe ways to do the same thing
         it is better to use them instead.
@@ -1116,7 +1163,7 @@ class UselessNodeViolation(ASTViolation):
         This might be also an overuse of syntax.
 
     Solution:
-        Remove node or make sure it makes any sense.
+        Remove node or make sure it makes sense.
 
     Example::
 
@@ -1144,7 +1191,7 @@ class UselessExceptCaseViolation(ASTViolation):
         It also does not make any sense to do so.
 
     Solution:
-        Remove ``except`` case or make sure it makes any sense.
+        Remove ``except`` case or make sure it makes sense.
 
     Example::
 
@@ -1179,10 +1226,10 @@ class UselessOperatorsViolation(ASTViolation):
     contain unnecessary operators.
 
     Reasoning:
-         This is done for consistency reasons.
+        This is done for consistency reasons.
 
     Solution:
-        Ommit unnecessary operators.
+        Omit unnecessary operators.
 
     Example::
 
@@ -1210,13 +1257,13 @@ class UselessOperatorsViolation(ASTViolation):
 @final
 class InconsistentReturnVariableViolation(ASTViolation):
     """
-    Forbid local variable that are only used in ``return`` statements.
+    Forbids local variable that are only used in ``return`` statements.
 
     Reasoning:
         This is done for consistency and more readable source code.
 
     Solution:
-        Forbid to use local variables that are only used in `return` statements
+        Return the expression itself, instead of creating a temporary variable.
 
     Example::
 
@@ -1238,3 +1285,656 @@ class InconsistentReturnVariableViolation(ASTViolation):
         'Found local variable that are only used in `return` statements'
     )
     code = 331
+
+
+@final
+class ImplicitTernaryViolation(ASTViolation):
+    """
+    Forbids to have implicit ternary expressions.
+
+    Reasoning:
+        This is done for consistency and readability reasons.
+        We believe that explicit ternary is better for readability.
+        This also allows you to identify hidden conditionals in your code.
+
+    Solution:
+        Refactor to use explicit ternary, or ``if`` condition.
+
+    Example::
+
+        # Correct:
+        some = one if cond() else two
+
+        # Wrong:
+        some = cond() and one or two
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    code = 332
+    error_template = 'Found implicit ternary expression'
+
+
+@final
+class ImplicitComplexCompareViolation(ASTViolation):
+    """
+    Forbids to have implicit complex compare expressions.
+
+    Reasoning:
+        Two compares in python that are joined with ``and`` operator
+        mean that you indeed have a complex compare with tree operators.
+
+    Solution:
+        Refactor your compare without ``and`` but with the third operator.
+        Notice, that you might have to change the ordering.
+
+    Example::
+
+        # Correct:
+        if three < two < one:
+            ...
+
+        # Wrong:
+        if one > two and two > three:
+            ...
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    code = 333
+    error_template = 'Found implicit complex compare'
+
+
+@final
+class ReversedComplexCompareViolation(ASTViolation):
+    """
+    Forbids to have reversed order complex compare expressions.
+
+    Reasoning:
+        Compares where comparators start from the lowest element
+        are easier to read than one that start from the biggest one.
+        It is also possible to write the same expression
+        in two separate way, which is incosistent.
+
+    Solution:
+        Reverse the order, so the smallest element comes the first
+        and the biggest one comes the last.
+
+    Example::
+
+        # Correct:
+        if three < two < one:
+            ...
+
+        # Wrong:
+        if one > two > three:
+            ...
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    code = 334
+    error_template = 'Found reversed complex compare'
+
+
+@final
+class WrongLoopIterTypeViolation(ASTViolation):
+    """
+    Forbids to use wrong ``for`` loop iter targets.
+
+    We forbid to use:
+
+    - Lists and list comprehensions
+    - Sets and set comprehensions
+    - Dicts and dict comprehensions
+    - Generator expressions
+    - Empty tuples
+
+    Reasoning:
+        Using lists, dicts, and sets do not make much sense.
+        You can use tuples instead.
+        Using comprehensions implicitly create a two level loops,
+        that are hard to read and deal with.
+
+    Solution:
+        Use tuples to create explicit iterables for ``for`` loops.
+        In case you are using a comprehension, create a new variable.
+
+    Example::
+
+        # Correct:
+        for person in ('Kim', 'Nick'):
+            ...
+
+        # Wrong:
+        for person in ['Kim', 'Nick']:
+            ...
+
+    .. versionadded:: 0.10.0
+    .. versionchanged:: 0.12.0
+
+    """
+
+    code = 335
+    error_template = 'Found incorrect `for` loop iter type'
+
+
+@final
+class ExplicitStringConcatViolation(ASTViolation):
+    """
+    Forbids explicit string concat in favour of ``.format`` method.
+
+    However, we still allow multiline string concat
+    as a way to write long strings that does not fit the 80-chars rule.
+
+    Reasoning:
+        When formating strings one must use ``.format``
+        and not any other formatting methods like ``%``, ``+``, or ``f``.
+        This is done for consistency reasons.
+
+    Solution:
+        Join strings together if you can, or use ``.format`` method.
+
+    Example::
+
+        # Correct:
+        x = 'ab: {0}'.format(some_data)
+
+        # Wrong:
+        x = 'a' + 'b: ' + some_data
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    code = 336
+    error_template = 'Found explicit string concat'
+
+
+@final
+class MultilineConditionsViolation(ASTViolation):
+    """
+    Forbids multiline conditions.
+
+    Reasoning:
+        This way of writing conditions hides the inner complexity this line has.
+        And it decreases readability of the code.
+
+    Solution:
+        Divide multiline conditions to some ``if`` condition. Or use variables.
+
+    Example::
+
+        # Correct:
+        if isinstance(node.test, ast.UnaryOp):
+            if isinstance(node.test.op, ast.Not):
+                ...
+
+
+        # Wrong:
+        if isinstance(node.test, ast.UnaryOp) and isinstance(
+            node.test.op,
+            ast.Not,
+        ):
+            ...
+
+    .. versionadded:: 0.9.0
+    .. versionchanged:: 0.11.0
+
+    """
+
+    error_template = 'Found multiline conditions'
+    code = 337
+    previous_codes = {465}
+
+
+@final
+class WrongMethodOrderViolation(ASTViolation):
+    """
+    Forbids to have incorrect order of methods inside a class.
+
+    We follow the same ordering:
+
+    - ``__new__``
+    - ``__init__``
+    - public and megic methods
+    - protected methods
+    - private methods (we discourage using them)
+
+    We follow "Newspaper order" when the most important things come the first.
+
+    Reasoning:
+        It is hard to read classes which API declarations is bloated with
+        implementation details. We need to see the important stuff first,
+        then we can go deeper in case we are interested.
+
+    Solution:
+        Reorder methods inside your class to match our format.
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found incorrect order of methods in a class'
+    code = 338
+
+
+@final
+class NumberWithMeaninglessZeroViolation(TokenizeViolation):
+    """
+    Forbids to use meaningless zeros.
+
+    We discorauge using meaningless zeros in
+    float, binary, octal, hex, and exponential numbers.
+
+    Reasoning:
+        There are ~infinite ways to write these numbers
+        by adding meaningless leading zeros to the number itself.
+        ``0b1`` is the same as ``0b01`` and ``0b001``.
+        How a language can be called consistent
+        if you can write numbers in an infinite ways?
+        It hurts readability and understanding of your code.
+
+    Solution:
+        Remove meaningless leading zeros.
+
+    Example::
+
+        # Correct:
+        numbers = [1.5, 0b1, 0o2, 0x5, 10e10]
+
+        # Wrong:
+        numbers = [1.50, 0b00000001, 0o0002, 0x05, 10e010]
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found number with meaningless zeros: {0}'
+    code = 339
+
+
+@final
+class PositiveExponentViolation(TokenizeViolation):
+    """
+    Forbids to extra ``+`` signs in the exponent.
+
+    Reasoning:
+        Positive exponent is positive by default,
+        there's no need to write an extra ``+`` sign.
+        We enforce consistency with this rule.
+
+    Solution:
+        Remove meaningless ``+`` sign from the exponent.
+
+    Example::
+
+        # Correct:
+        number = 1e1 + 1e-1
+
+        # Wrong:
+        number = 1e+1
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found exponent number with positive exponent: {0}'
+    code = 340
+
+
+@final
+class WrongHexNumberCaseViolation(TokenizeViolation):
+    """
+    Forbids to use letters as hex numbers.
+
+    Reasoning:
+        One can write ``0xA`` and ``0xa`` which is inconsistent.
+        This rule enforces upper-case letters in hex numbers.
+
+    Solution:
+        Use uppercase letters in hex numbers.
+
+    Example::
+
+        # Correct:
+        number = 0xABCDEF
+
+        # Wrong:
+        number = 0xabcdef
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found wrong hex number case: {0}'
+    code = 341
+
+
+@final
+class ImplicitRawStringViolation(TokenizeViolation):
+    r"""
+    Forbids to use ``\\`` escape sequences inside regular strings.
+
+    Reasoning:
+        It is hard to read escape sequencse inside regular strings,
+        because they use ``\\`` double backslash for a single character escape.
+
+    Solution:
+        Use raw strings ``r''`` to rewrite
+        the escape sequence with a ``\`` single backslash.
+
+    Example::
+
+        # Correct:
+        escaped = [r'\n', '\n']
+
+        # Wrong:
+        escaped = '\\n'
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found implicit raw string: {0}'
+    code = 342
+
+
+@final
+class BadComplexNumberSuffixViolation(TokenizeViolation):
+    """
+    Forbids to use uppercase complex number suffix.
+
+    Reasoning:
+        Numbers should be consistent.
+
+    Solution:
+        Use lowercase suffix for imaginary part.
+
+    Example::
+
+        # Correct:
+        complex_number = 1j
+
+        # Wrong:
+        complex_number = 1J
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found wrong complex number suffix: {0}'
+    code = 343
+
+
+@final
+class ZeroDivisionViolation(ASTViolation):
+    """
+    Forbids to explicitly divide by zero.
+
+    Reasoning:
+        This will just throw ``ZeroDivisionError``
+        in case that's what you need: just throw it.
+        No need to use undefined meth behaviours.
+        Or it might be just a typo / mistake, then fix it.
+
+    Solution:
+        Use ``ZeroDivisionError`` or fix your number not to be ``0``.
+
+    Example::
+
+        # Correct:
+        raise ZeroDivisionError()
+
+        # Wrong:
+        1 / 0
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found explicit zero division'
+    code = 344
+
+
+@final
+class MeaninglessNumberOperationViolation(ASTViolation):
+    """
+    Forbids to use meaningless math operations with ``0`` and ``1``.
+
+    Reasoning:
+        Adding and substracting zero does not change the value.
+        There's no need to do that.
+        Multipling by zero is also redundant:
+        it can be replaced with explicit ``0`` assign.
+        Multiplying and dividing by ``1`` is also meaningless.
+
+    Solution:
+        Remove useless zero operations.
+
+    Example::
+
+        # Correct:
+        number = 1
+        zero = 0
+        one = 1
+
+        # Wrong:
+        number = 1 + 0 * 1
+        zero = some * 0 / 1
+        one = some ** 0 ** 1
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found meaningless number operation'
+    code = 345
+
+
+@final
+class OperationSignNegationViolation(ASTViolation):
+    """
+    Forbids to have double minus operations.
+
+    Reasoning:
+        Having two operations is harder than having just one.
+        Two negations are harder than one positive expression.
+        Two negations equal to one positive expression.
+        Positive and negative equal to one negative.
+
+    Solution:
+        Replace double minus operation to a single one with plus.
+        Replace 'plus-minus' operation to a single one with minus.
+
+    Example::
+
+        # Correct:
+        number = 3 + 1
+        number += 6
+        number -= 2
+
+        # Wrong:
+        number = 3 - -1
+        number -= -6
+        number += -2
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found wrong operation sign'
+    code = 346
+
+
+@final
+class VagueImportViolation(ASTViolation):
+    """
+    Forbids imports that may cause confusion outside of the module.
+
+    Reasoning:
+        See ``datetime.*`` in code? You know that it's from datetime.
+        See ``BaseView`` in a Django project? You know where it is from.
+        See ``loads``? It can be anything: ``yaml``, ``toml``, ``json``, etc.
+
+    See
+    :py:data:`~wemake_python_styleguide.constants.VAGUE_IMPORTS_BLACKLIST`
+    for the full list of bad import names.
+
+    Example::
+
+        # Correct:
+        import json
+        json.loads(content)
+
+        # Wrong:
+        from json import loads
+        loads(content)
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found vague import that may cause confusion: {0}'
+    code = 347
+
+
+@final
+class AdditionAssignmentOnListViolation(ASTViolation):
+    """
+    Forbids usage of += with list arguments.
+
+    Reasoning:
+        ``+=`` works like ``extend()`` method.
+        Why not just use ``extend()`` instead of ``+=`` to be consistent.
+
+    Example::
+
+        # Correct:
+        some_list.extend([1, 2, 3])
+
+        # Wrong:
+        some_list += [1, 2, 3]
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found addition assignment with list argument'
+    code = 348
+
+
+@final
+class RedundantSubscriptViolation(ASTViolation):
+    """
+    Forbids the use of redundant components in a subscript's slice.
+
+    Reasoning:
+        We do it for consistency reasons.
+
+    Example::
+
+        # Correct:
+        array[:7]
+        array[3:]
+
+        # Wrong:
+        x[0:7]
+        x[3:None]
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found redundant subscript slice: {0}'
+    code = 349
+
+
+@final
+class AugmentedAssignPatternViolation(ASTViolation):
+    """
+    Enforce using augmented assign pattern.
+
+    Reasoning:
+        ``a += b`` is short and correct version of ``a = a + b``.
+        Why not using the short version?
+
+    Example::
+
+        # Correct:
+        a += b
+
+        # Wrong:
+        a = a + b
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found usable augmented assign pattern'
+    code = 350
+
+
+@final
+class UnnecessaryLiteralsViolation(ASTViolation):
+    """
+    Forbids the use of unnecessary literals in your code.
+
+    Reasoning:
+        We discourage using primitive calls to get default type values.
+        There are better ways to get these values.
+
+    Solution:
+        Use direct default values of the given type
+
+    Example::
+
+        # Correct:
+        default = 0
+
+        # Wrong:
+        default = int()
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found unnecessary literals.'
+    code = 351
+
+
+@final
+class MultilineLoopViolation(ASTViolation):
+    """
+    Forbids multiline loops.
+
+    Reasoning:
+        It decreased the readability of the code.
+
+    Solution:
+        Use single line loops and create new variables
+        in case you need to fit too many logic inside the loop definition.
+
+    Example::
+
+        # Correct
+
+        for num in some_function(arg1, arg2):
+            ...
+
+        # Wrong
+        for num in range(
+            arg1,
+            arg2,
+        ):
+            ...
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Forbids multiline loops'
+    code = 352

@@ -38,9 +38,9 @@ Reference
 """
 
 import ast
-from typing import Tuple, Type, Union
+from typing import List, Tuple, Type, Union
 
-from typing_extensions import Protocol
+from typing_extensions import Protocol, final
 
 #: In cases we need to work with both import types.
 AnyImport = Union[ast.Import, ast.ImportFrom]
@@ -51,24 +51,39 @@ AnyFunctionDef = Union[ast.FunctionDef, ast.AsyncFunctionDef]
 #: In cases we need to work with all function definitions (including lambdas).
 AnyFunctionDefAndLambda = Union[AnyFunctionDef, ast.Lambda]
 
-#: In cases we need to work with both forms of if functions
+#: In cases we need to work with both forms of if functions.
 AnyIf = Union[ast.If, ast.IfExp]
 
-#: Flake8 API format to return error messages:
+#: In cases we need to work with both sync and async loops.
+AnyFor = Union[ast.For, ast.AsyncFor]
+
+#: In cases we need to work with both sync and async context managers.
+AnyWith = Union[ast.With, ast.AsyncWith]
+
+#: Flake8 API format to return error messages.
 CheckResult = Tuple[int, int, str, type]
 
 #: Tuple of AST node types for declarative syntax.
 AnyNodes = Tuple[Type[ast.AST], ...]
 
-#: In cases we need to work with all unary operators
-AnyUnaryOp = Union[
-    Type[ast.Invert],
-    Type[ast.Not],
-    Type[ast.UAdd],
-    Type[ast.USub],
+#: When we search for assign elements, we also need typed assign.
+AnyAssign = Union[ast.Assign, ast.AnnAssign]
+
+#: That's how we define context of operations.
+ContextNodes = Union[
+    ast.Module,
+    ast.ClassDef,
+    AnyFunctionDef,
+]
+
+#: In cases we need to work with both access types.
+AnyAccess = Union[
+    ast.Attribute,
+    ast.Subscript,
 ]
 
 
+@final
 class ConfigurationOptions(Protocol):
     """
     Provides structure for the options we use in our checker and visitors.
@@ -97,6 +112,18 @@ class ConfigurationOptions(Protocol):
     max_line_complexity: int
     max_jones_score: int
     max_imports: int
+    max_imported_names: int
     max_base_classes: int
     max_decorators: int
     max_string_usages: int
+    max_awaits: int
+    max_try_body_length: int
+    max_module_expressions: int
+    max_function_expressions: int
+    max_asserts: int
+    max_access_level: int
+    max_attributes: int
+    nested_classes_whitelist: List[str]  # flake8 passes lists
+
+    # Comments
+    max_noqa_comments: int

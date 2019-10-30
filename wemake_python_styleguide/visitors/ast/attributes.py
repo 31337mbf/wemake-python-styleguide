@@ -5,10 +5,12 @@ from typing import ClassVar, FrozenSet
 
 from typing_extensions import final
 
-from wemake_python_styleguide.logics.naming import access
+from wemake_python_styleguide.logic.naming import access
 from wemake_python_styleguide.violations.best_practices import (
-    DirectMagicAttributeAccessViolation,
     ProtectedAttributeViolation,
+)
+from wemake_python_styleguide.violations.oop import (
+    DirectMagicAttributeAccessViolation,
 )
 from wemake_python_styleguide.visitors.base import BaseNodeVisitor
 
@@ -29,6 +31,19 @@ class WrongAttributeVisitor(BaseNodeVisitor):
         '__qualname__',
         '__doc__',
     ))
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        """
+        Checks the `Attribute` node.
+
+        Raises:
+            ProtectedAttributeViolation
+            DirectMagicAttributeAccessViolation
+
+        """
+        self._check_protected_attribute(node)
+        self._check_magic_attribute(node)
+        self.generic_visit(node)
 
     def _is_super_called(self, node: ast.Call) -> bool:
         if isinstance(node.func, ast.Name):
@@ -57,16 +72,3 @@ class WrongAttributeVisitor(BaseNodeVisitor):
                 self._ensure_attribute_type(
                     node, DirectMagicAttributeAccessViolation,
                 )
-
-    def visit_Attribute(self, node: ast.Attribute) -> None:
-        """
-        Checks the `Attribute` node.
-
-        Raises:
-            ProtectedAttributeViolation
-            DirectMagicAttributeAccessViolation
-
-        """
-        self._check_protected_attribute(node)
-        self._check_magic_attribute(node)
-        self.generic_visit(node)

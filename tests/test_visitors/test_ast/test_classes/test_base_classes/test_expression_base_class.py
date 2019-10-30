@@ -2,9 +2,7 @@
 
 import pytest
 
-from wemake_python_styleguide.violations.best_practices import (
-    IncorrectBaseClassViolation,
-)
+from wemake_python_styleguide.violations.oop import WrongBaseClassViolation
 from wemake_python_styleguide.visitors.ast.classes import WrongClassVisitor
 
 class_with_base = """
@@ -13,19 +11,25 @@ class Meta({0}):
 """
 
 
-@pytest.mark.parametrize('code', [
-    class_with_base,
-])
 @pytest.mark.parametrize('base', [
     '(lambda: object)()',
     'method.call()',
     '-Name',
     '[1, 2, 3]',
+    '(First, Second)',
+    'None',
+    'Call().attr',
+    'dict[1].attr',
+    'dict[1].attr()',
+    'Generic[TextType][Nested]',
+    'Generic["TextType"][Nested]',
+    'Call()[x]',
+    '[12][0]',
+    '[].len',
 ])
 def test_base_class_expression(
     assert_errors,
     parse_ast_tree,
-    code,
     base,
     default_options,
 ):
@@ -35,12 +39,9 @@ def test_base_class_expression(
     visitor = WrongClassVisitor(default_options, tree=tree)
     visitor.run()
 
-    assert_errors(visitor, [IncorrectBaseClassViolation])
+    assert_errors(visitor, [WrongBaseClassViolation])
 
 
-@pytest.mark.parametrize('code', [
-    class_with_base,
-])
 @pytest.mark.parametrize('base', [
     'RawName',
     'Name.Attribute',
@@ -51,13 +52,20 @@ def test_base_class_expression(
     # Regressions, see: issue-459
     'Generic[ValueType]',
     'Monad[ValueType, ErrorType]',
+    'Monad[ValueType, None]',
     'Generic[Some], metaclass=abc.ABCMeta',
-    'Generic["TextType"]',
+    'types.Generic[X]',
+    'Generic[ast.AST]',
+    'Generic[Optional[int]]',
+    'Generic[Literal[1]]',
+
+    # Might be removed later:
+    'Generic[1]',  # int
+    'Generic["X"]',  # str
 ])
 def test_correct_base_classes(
     assert_errors,
     parse_ast_tree,
-    code,
     base,
     default_options,
 ):

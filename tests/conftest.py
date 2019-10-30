@@ -3,12 +3,20 @@
 import inspect
 import os
 from collections import namedtuple
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 
 import pytest
 
-from wemake_python_styleguide import violations
 from wemake_python_styleguide.options.config import Configuration
+from wemake_python_styleguide.violations import (
+    annotations,
+    best_practices,
+    complexity,
+    consistency,
+    naming,
+    oop,
+    refactoring,
+)
 from wemake_python_styleguide.violations.base import (
     ASTViolation,
     BaseViolation,
@@ -34,17 +42,24 @@ def _is_violation_class(cls) -> bool:
 
 def _load_all_violation_classes():
     modules = [
-        violations.naming,
-        violations.complexity,
-        violations.consistency,
-        violations.best_practices,
+        naming,
+        complexity,
+        consistency,
+        best_practices,
+        refactoring,
+        oop,
+        annotations,
     ]
 
     classes = {}
     for module in modules:
         classes_names_list = inspect.getmembers(module, _is_violation_class)
         only_classes = map(itemgetter(1), classes_names_list)
-        classes.update({module: list(only_classes)})
+        classes.update({
+            module: list(
+                sorted(only_classes, key=attrgetter('code')),
+            ),
+        })
     return classes
 
 
@@ -79,7 +94,7 @@ def options():
     """Returns the options builder."""
     default_values = {
         option.long_option_name[2:].replace('-', '_'): option.default
-        for option in Configuration.options
+        for option in Configuration._options  # noqa: WPS437
     }
 
     Options = namedtuple('options', default_values.keys())
@@ -93,6 +108,6 @@ def options():
 
 
 @pytest.fixture(scope='session')
-def default_options(options):
+def default_options(options):  # noqa: WPS442
     """Returns the default options."""
     return options()

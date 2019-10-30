@@ -40,6 +40,7 @@ Checker API
 
 import ast
 import tokenize
+import traceback
 from typing import ClassVar, Iterator, Sequence, Type
 
 from flake8.options.manager import OptionManager
@@ -49,7 +50,9 @@ from wemake_python_styleguide import constants, types
 from wemake_python_styleguide import version as pkg_version
 from wemake_python_styleguide.options.config import Configuration
 from wemake_python_styleguide.options.validation import validate_options
-from wemake_python_styleguide.presets import complexity, general, tokens
+from wemake_python_styleguide.presets.types import file_tokens as tokens_preset
+from wemake_python_styleguide.presets.types import filename as filename_preset
+from wemake_python_styleguide.presets.types import tree as tree_preset
 from wemake_python_styleguide.transformations.ast_tree import transform
 from wemake_python_styleguide.visitors import base
 
@@ -80,13 +83,13 @@ class Checker(object):
     name: ClassVar[str] = pkg_version.pkg_name
     version: ClassVar[str] = pkg_version.pkg_version
 
-    config = Configuration()
     options: types.ConfigurationOptions
+    config = Configuration()
 
-    visitors: ClassVar[Sequence[VisitorClass]] = (
-        *general.GENERAL_PRESET,
-        *complexity.COMPLEXITY_PRESET,
-        *tokens.TOKENS_PRESET,
+    _visitors: ClassVar[Sequence[VisitorClass]] = (
+        *filename_preset.PRESET,
+        *tree_preset.PRESET,
+        *tokens_preset.PRESET,
     )
 
     def __init__(
@@ -105,10 +108,10 @@ class Checker(object):
         ``flake8`` also decides how to execute this plugin
         based on its parameters. This one is executed once per module.
 
-        Parameters:
-            tree: ``ast`` parsed by ``flake8``.
-                Differs from ``ast.parse`` since it is mutated by multiple
-                ``flake8`` plugins. Why mutated? Since it is really expensive
+        Arguments:
+            tree: ``ast`` parsed by ``flake8``. Differs from ``ast.parse``
+                since it is mutated by multiple ``flake8`` plugins.
+                Why mutated? Since it is really expensive
                 to copy all ``ast`` information in terms of memory.
 
             file_tokens: ``tokenize.tokenize`` parsed file tokens.
@@ -138,18 +141,6 @@ class Checker(object):
         """Parses registered options for providing them to each visitor."""
         cls.options = validate_options(options)
 
-    def _run_checks(
-        self,
-        visitors: Sequence[VisitorClass],
-    ) -> Iterator[types.CheckResult]:
-        """Runs all passed visitors one by one."""
-        for visitor_class in visitors:
-            visitor = visitor_class.from_checker(self)
-            visitor.run()
-
-            for error in visitor.violations:
-                yield (*error.node_items(), type(self))
-
     def run(self) -> Iterator[types.CheckResult]:
         """
         Runs the checker.
@@ -161,4 +152,16 @@ class Checker(object):
             Violations that were found by the passed visitors.
 
         """
-        yield from self._run_checks(self.visitors)
+        for visitor_class in self._visitors:
+            visitor = visitor_class.from_checker(self)
+
+            try:
+                visitor.run()
+            except Exception:
+                # In case we fail misserably, we want users to see at
+                # least something! Full stack trace
+                # and some rules that still work.
+                print(traceback.format_exc())  # noqa: T001
+
+            for error in visitor.violations:
+                yield (*error.node_items(), type(self))

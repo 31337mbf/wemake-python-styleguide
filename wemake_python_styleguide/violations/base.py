@@ -41,7 +41,7 @@ Reference
 
 import ast
 import tokenize
-from typing import ClassVar, Optional, Tuple, Union
+from typing import ClassVar, Optional, Set, Tuple, Union
 
 from typing_extensions import final
 
@@ -65,41 +65,25 @@ class BaseViolation(object):
     Attributes:
         error_template: message that will be shown to user after formatting.
         code: violation unique number. Used to identify the violation.
+        previous_codes: just a documentation thing to track changes in time.
 
     """
 
     error_template: ClassVar[str]
     code: ClassVar[int]
+    previous_codes: ClassVar[Set[int]]
 
     def __init__(self, node: ErrorNode, text: Optional[str] = None) -> None:
         """
-        Creates new instance of abstract violation.
+        Creates a new instance of an abstract violation.
 
-        Parameters:
-            node: violation was raised by this node. If applied.
-            text: extra text to format the final message. If applied.
+        Arguments:
+            node: violation was raised by this node. If applicable.
+            text: extra text to format the final message. If applicable.
 
         """
         self._node = node
         self._text = text
-
-    @final
-    def _full_code(self) -> str:
-        """
-        Returns fully formatted code.
-
-        Adds violation letter to the numbers.
-        Also ensures that codes like ``3`` will be represented as ``Z003``.
-        """
-        return 'Z' + str(self.code).zfill(3)
-
-    def _location(self) -> Tuple[int, int]:
-        """
-        Return violation location inside the file.
-
-        Default location is in the so-called "file beginning".
-        """
-        return 0, 0
 
     @final
     def message(self) -> str:
@@ -116,6 +100,24 @@ class BaseViolation(object):
     def node_items(self) -> Tuple[int, int, str]:
         """Returns tuple to match ``flake8`` API format."""
         return (*self._location(), self.message())
+
+    @final
+    def _full_code(self) -> str:
+        """
+        Returns fully formatted code.
+
+        Adds violation letter to the numbers.
+        Also ensures that codes like ``3`` will be represented as ``WPS003``.
+        """
+        return 'WPS{0}'.format(str(self.code).zfill(3))
+
+    def _location(self) -> Tuple[int, int]:
+        """
+        Return violation location inside the file.
+
+        Default location is in the so-called "file beginning".
+        """
+        return 0, 0
 
 
 class _BaseASTViolation(BaseViolation):

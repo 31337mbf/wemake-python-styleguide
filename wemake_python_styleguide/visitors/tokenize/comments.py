@@ -9,10 +9,10 @@ That's how a basic ``comment`` type token looks like:
 
     TokenInfo(
         type=57 (COMMENT),
-        string='# noqa: Z100',
+        string='# noqa: WPS100',
         start=(1, 4),
         end=(1, 16),
-        line="u'' # noqa: Z100\n",
+        line="u'' # noqa: WPS100\n",
     )
 
 All comments have the same type.
@@ -25,11 +25,8 @@ from typing.re import Pattern
 
 from typing_extensions import final
 
-from wemake_python_styleguide.constants import (
-    MAX_NO_COVER_COMMENTS,
-    MAX_NOQA_COMMENTS,
-)
-from wemake_python_styleguide.logics.tokens import get_comment_text
+from wemake_python_styleguide.constants import MAX_NO_COVER_COMMENTS
+from wemake_python_styleguide.logic.tokens import get_comment_text
 from wemake_python_styleguide.violations.best_practices import (
     OveruseOfNoCoverCommentViolation,
     OveruseOfNoqaCommentViolation,
@@ -47,7 +44,7 @@ class WrongCommentVisitor(BaseTokenVisitor):
     """Checks comment tokens."""
 
     _no_cover: ClassVar[Pattern] = re.compile(r'^pragma:\s+no\s+cover')
-    _noqa_check: ClassVar[Pattern] = re.compile(r'^noqa:?($|[A-Z\d\,\s]+)')
+    _noqa_check: ClassVar[Pattern] = re.compile(r'^(noqa:?)($|[A-Z\d\,\s]+)')
     _type_check: ClassVar[Pattern] = re.compile(
         r'^type:\s?([\w\d\[\]\'\"\.]+)$',
     )
@@ -58,6 +55,21 @@ class WrongCommentVisitor(BaseTokenVisitor):
         self._noqa_count = 0
         self._no_cover_count = 0
 
+    def visit_comment(self, token: tokenize.TokenInfo) -> None:
+        """
+        Performs comment checks.
+
+        Raises:
+            OveruseOfNoqaCommentViolation
+            WrongDocCommentViolation
+            WrongMagicCommentViolation
+
+        """
+        self._check_noqa(token)
+        self._check_typed_ast(token)
+        self._check_empty_doc_comment(token)
+        self._check_cover_comments(token)
+
     def _check_noqa(self, token: tokenize.TokenInfo) -> None:
         comment_text = get_comment_text(token)
         match = self._noqa_check.match(comment_text)
@@ -65,9 +77,11 @@ class WrongCommentVisitor(BaseTokenVisitor):
             return
 
         self._noqa_count += 1
-        excludes = match.groups()[0].strip()
-        if not excludes:
-            # We can not pass the actual line here,
+        excludes = match.groups()[1].strip()
+        prefix = match.groups()[0].strip()
+
+        if not excludes or prefix[-1] != ':':
+            # We cannot pass the actual line here,
             # since it will be ignored due to `# noqa` comment:
             self.add_violation(WrongMagicCommentViolation(text=comment_text))
 
@@ -96,7 +110,7 @@ class WrongCommentVisitor(BaseTokenVisitor):
         self._no_cover_count += 1
 
     def _post_visit(self) -> None:
-        if self._noqa_count > MAX_NOQA_COMMENTS:
+        if self._noqa_count > self.options.max_noqa_comments:
             self.add_violation(
                 OveruseOfNoqaCommentViolation(text=str(self._noqa_count)),
             )
@@ -106,21 +120,6 @@ class WrongCommentVisitor(BaseTokenVisitor):
                     text=str(self._no_cover_count),
                 ),
             )
-
-    def visit_comment(self, token: tokenize.TokenInfo) -> None:
-        """
-        Performs comment checks.
-
-        Raises:
-            OveruseOfNoqaCommentViolation
-            WrongDocCommentViolation
-            WrongMagicCommentViolation
-
-        """
-        self._check_noqa(token)
-        self._check_typed_ast(token)
-        self._check_empty_doc_comment(token)
-        self._check_cover_comments(token)
 
 
 @final
@@ -132,6 +131,16 @@ class FileMagicCommentsVisitor(BaseTokenVisitor):
         tokenize.NEWLINE,
         tokenize.ENDMARKER,
     ))
+
+    def visit_comment(self, token: tokenize.TokenInfo) -> None:
+        """
+        Checks special comments that are magic per each file.
+
+        Raises:
+            EmptyLineAfterCoddingViolation
+
+        """
+        self._check_empty_line_after_codding(token)
 
     def _offset_for_comment_line(self, token: tokenize.TokenInfo) -> int:
         if token.exact_type == tokenize.COMMENT:
@@ -169,13 +178,3 @@ class FileMagicCommentsVisitor(BaseTokenVisitor):
                 if next_token.exact_type not in self._allowed_newlines:
                     self.add_violation(EmptyLineAfterCodingViolation(token))
                 break
-
-    def visit_comment(self, token: tokenize.TokenInfo) -> None:
-        """
-        Checks special comments that are magic per each file.
-
-        Raises:
-            EmptyLineAfterCoddingViolation
-
-        """
-        self._check_empty_line_after_codding(token)

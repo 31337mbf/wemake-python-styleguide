@@ -1,6 +1,7 @@
 ---
 name: Bug
 about: Create a report to help us improve
+labels: 'bug'
 ---
 
 # Bug report
@@ -18,6 +19,16 @@ But, we will need some information about what's wrong to help you.
 ## How is that should be
 
 <!-- Describe how it should work. -->
+
+<!--
+
+  Love wemake-python-styleguide? ❤️
+  Do you want your bugs to be solved faster?
+
+  Please consider supporting our collective:
+👉  https://opencollective.com/wemake-python-styleguide/donate
+
+-->
 
 ## System information
 

@@ -13,9 +13,11 @@ You can also find interesting reading about "Cognitive complexity":
 https://www.sonarsource.com/docs/CognitiveComplexity.pdf
 
 Note:
-
     Simple is better than complex.
     Complex is better than complicated.
+
+See also:
+    https://sobolevn.me/2019/10/complexity-waterfall
 
 .. currentmodule:: wemake_python_styleguide.violations.complexity
 
@@ -28,6 +30,8 @@ Summary
    JonesScoreViolation
    TooManyImportsViolation
    TooManyModuleMembersViolation
+   TooManyImportedNamesViolation
+   OverusedExpressionViolation
    TooManyLocalsViolation
    TooManyArgumentsViolation
    TooManyReturnsViolation
@@ -35,6 +39,9 @@ Summary
    TooManyMethodsViolation
    TooManyBaseClassesViolation
    TooManyDecoratorsViolation
+   TooManyAwaitsViolation
+   TooManyAssertsViolation
+   TooDeepAccessViolation
    TooDeepNestingViolation
    LineComplexityViolation
    TooManyConditionsViolation
@@ -42,6 +49,11 @@ Summary
    TooManyForsInComprehensionViolation
    TooManyExceptCasesViolation
    OverusedStringViolation
+   TooLongYieldTupleViolation
+   TooLongCompareViolation
+   TooLongTryBodyViolation
+   TooManyPublicAttributesViolation
+
 
 Module complexity
 -----------------
@@ -49,9 +61,11 @@ Module complexity
 .. autoclass:: JonesScoreViolation
 .. autoclass:: TooManyImportsViolation
 .. autoclass:: TooManyModuleMembersViolation
+.. autoclass:: TooManyImportedNamesViolation
+.. autoclass:: OverusedExpressionViolation
 
-Function and class complexity
------------------------------
+Structure complexity
+--------------------
 
 .. autoclass:: TooManyLocalsViolation
 .. autoclass:: TooManyArgumentsViolation
@@ -60,10 +74,9 @@ Function and class complexity
 .. autoclass:: TooManyMethodsViolation
 .. autoclass:: TooManyBaseClassesViolation
 .. autoclass:: TooManyDecoratorsViolation
-
-Structures complexity
----------------------
-
+.. autoclass:: TooManyAwaitsViolation
+.. autoclass:: TooManyAssertsViolation
+.. autoclass:: TooDeepAccessViolation
 .. autoclass:: TooDeepNestingViolation
 .. autoclass:: LineComplexityViolation
 .. autoclass:: TooManyConditionsViolation
@@ -71,6 +84,10 @@ Structures complexity
 .. autoclass:: TooManyForsInComprehensionViolation
 .. autoclass:: TooManyExceptCasesViolation
 .. autoclass:: OverusedStringViolation
+.. autoclass:: TooLongYieldTupleViolation
+.. autoclass:: TooLongCompareViolation
+.. autoclass:: TooLongTryBodyViolation
+.. autoclass:: TooManyPublicAttributesViolation
 
 """
 
@@ -185,6 +202,83 @@ class TooManyModuleMembersViolation(SimpleViolation):
     code = 202
 
 
+@final
+class TooManyImportedNamesViolation(SimpleViolation):
+    """
+    Forbids to have modules with too many imported names.
+
+    Namespaces are one honking great idea -- let's do more of those!
+
+    Reasoning:
+        Having too many imported names without prefixes is quite expensive.
+        You have to memorize all the source locations of the imports.
+        And sometimes it is hard to remember what kind of functions and classes
+        are already injected into your context.
+
+        It is also a questionable design if a single module has a lot of
+        imports. Why a single module has so many dependencies?
+        So, it becomes too coupled.
+
+    Solution:
+        Refactor the imports to import a common namespace. Something like
+        ``from package import module`` and then
+        use it like ``module.function()``.
+
+        Or refactor your code and split the complex module into several ones.
+
+    Example::
+
+        # Correct:
+        import module  # 1 imported name
+
+        # Wrong:
+        from module import func1, func2, ..., funcN  # N imported names
+
+    We do not make any differences between
+    ``import`` and ``from ... import ...``.
+
+    Configuration:
+        This rule is configurable with ``--max-imported-names``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_IMPORTED_NAMES`
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found module with too many imported names: {0}'
+    code = 203
+
+
+@final
+class OverusedExpressionViolation(ASTViolation):
+    """
+    Forbids to have overused expressions in a module, function or method.
+
+    Reasoning:
+        Overusing expression lead to losing the parts that can and should
+        be refactored into methods and properties of objects.
+
+    Solution:
+        Refactor expressions to be attribute, method, or a new variable.
+
+    Configuration:
+        This rule is configurable with ``--max-module-expressions``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_MODULE_EXPRESSIONS`
+
+        And with ``--max-function-expressions``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_FUNCTION_EXPRESSIONS`
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found overused expression: {0}'
+    code = 204
+
+
 # Functions and classes:
 
 @final
@@ -275,7 +369,7 @@ class TooManyReturnsViolation(ASTViolation):
         hard to change and keep everything inside your head at once.
 
     Solution:
-        Change your design.
+        Change your design. Split functions into multiple ones.
 
     Configuration:
         This rule is configurable with ``--max-returns``.
@@ -430,7 +524,108 @@ class TooManyDecoratorsViolation(ASTViolation):
     code = 216
 
 
-# Structures:
+@final
+class TooManyAwaitsViolation(ASTViolation):
+    """
+    Forbids placing too many ``await`` expressions into a function.
+
+    Reasoning:
+        When there are too many ``await`` keywords,
+        functions are starting to get really complex.
+        It is hard to tell where are we and what is going on.
+
+    Solution:
+        Change your design. Split functions into multiple ones.
+
+    Configuration:
+        This rule is configurable with ``--max-awaits``.
+        Default: :str:`wemake_python_styleguide.options.defaults.MAX_AWAITS`
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    error_template = 'Found too many await expressions: {0}'
+    code = 217
+
+
+@final
+class TooManyAssertsViolation(ASTViolation):
+    """
+    Forbids placing too many ``asseert`` statements into a function.
+
+    Reasoning:
+        When there are too many ``assert`` keywords,
+        functions are starting to get really complex.
+        It might indicate that your tests or contracts are too big.
+
+    Solution:
+        Create rich ``assert`` statements, use higher-level contracts,
+        or create special guard functions.
+
+    Configuration:
+        This rule is configurable with ``--max-asserts``.
+        Default: :str:`wemake_python_styleguide.options.defaults.MAX_ASSERTS`
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found too many `assert` statements: {0}'
+    code = 218
+
+
+@final
+class TooDeepAccessViolation(ASTViolation):
+    """
+    Forbids to have consecutive expressions with too deep access level.
+
+    We consider only these expressions as accesses:
+
+    - ``ast.Subscript``
+    - ``ast.Attribute``
+
+    We do not treat ``ast.Call`` as an access, since there are
+    a lot of call-based APIs like Django ORM, builder patterns, etc.
+
+    Reasoning:
+        Having too deep access level indicates a bad design
+        and overcomplicated data without proper API.
+
+    Solution:
+        Split the expression into variables, functions or classes.
+        Refactor the API for your data layout.
+
+    Example::
+
+        # Correct: access level = 4
+        self.attr.inner.wrapper[1]
+
+        # Correct: access level = 1
+        manager.filter().exclude().annotate().values().first()
+
+        # Wrong: access level = 5
+        self.attr.inner.wrapper.method.call()
+
+        # Wrong: access level = 5
+        # `obj` has access level of 2:
+        # `.attr`, `.call`
+        # `call()` has access level of 5:
+        # `.other`, `[0]`, `.field`, `.type`, `.boom`
+        obj.attr.call().other[0].field.type.boom
+
+    Configuration:
+        This rule is configurable with ``--max-access-level``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_ACCESS_LEVEL`
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found too deep access level: {0}'
+    code = 219
+
 
 @final
 class TooDeepNestingViolation(ASTViolation):
@@ -612,6 +807,9 @@ class OverusedStringViolation(MaybeASTViolation):
     """
     Forbids to over-use string constants.
 
+    We allow to use strings without any restrictions as annotations for
+    variables, arguments, return values, and class attributes.
+
     Reasoning:
         When some string is used more than several time in your code,
         it probably means that this string is a meaningful constant.
@@ -632,3 +830,111 @@ class OverusedStringViolation(MaybeASTViolation):
 
     error_template = 'Found string constant over-use: {0}'
     code = 226
+
+
+@final
+class TooLongYieldTupleViolation(ASTViolation):
+    """
+    Forbids to yield too long tuples.
+
+    Reasoning:
+        Long yield tuples complicate generator using.
+        This rule helps to reduce complication.
+
+    Solution:
+        Use lists of similar type or wrapper objects.
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    error_template = 'Found too long yield tuple: {0}'
+    code = 227
+
+
+@final
+class TooLongCompareViolation(ASTViolation):
+    """
+    Forbids to have too long compare expressions.
+
+    Reasoning:
+        To long compare expressions indicate
+        that there's something wrong going on in the code.
+        Compares should not be longer than 3 or 4 items.
+
+    Solution:
+        Use several conditions, seprate variables, or functions.
+
+    .. versionadded:: 0.10.0
+
+    """
+
+    error_template = 'Found too long compare'
+    code = 228
+
+
+@final
+class TooLongTryBodyViolation(ASTViolation):
+    """
+    Forbids to have ``try`` blocks with too long bodies.
+
+    Reasoning:
+        Having too many statements inside your ``try`` block
+        can lead to situations when some different statement
+        raises an exception and you are not aware of it
+        since it is not expected.
+
+    Solution:
+        Move things out of the ``try`` block or create new functions.
+        The less lines you have in your ``try`` block - the safer
+        you are from accidental errors.
+
+    Configuration:
+        This rule is configurable with ``--max-try-body-length``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_TRY_BODY_LENGTH`
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found too long ``try`` body length: {0}'
+    code = 229
+
+
+@final
+class TooManyPublicAttributesViolation(ASTViolation):
+    """
+    Forbids to have ``try`` blocks with too long bodies.
+
+    We only check static definitions in a form of ``self.public = ...``.
+    We do not count parent attributes.
+    We do not count properties.
+    We do not count annotations.
+    We do not count class attributes.
+
+    Reasoning:
+        Having too many public instance attributes means
+        that your class is too complex in terms of coupling.
+        Other classes and functions will rely on these concrete fields
+        instead of better abstraction layers.
+
+    Solution:
+        Make some attributes protected.
+        Split this class into several ones.
+        If class is a Data Transder Object, then use ``@dataclass`` decorator.
+
+    Configuration:
+        This rule is configurable with ``--max-attributes``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_ATTRIBUTES`
+
+    See also:
+        https://en.wikipedia.org/wiki/Coupling_(computer_programming)
+
+    .. versionadded:: 0.12.0
+
+    """
+
+    error_template = 'Found too many public instance attributes'
+    code = 230

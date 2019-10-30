@@ -11,14 +11,11 @@ from wemake_python_styleguide.visitors.tokenize.primitives import (
 
 
 @pytest.mark.parametrize('number', [
-    '0XFF',
-    '1.5E+10',
+    '0X1',
+    '0XE',  # special case
+    '1.5E10',
     '0O11',
     '0B1001',
-    '-0XFF',
-    '-1.5E+10',
-    '-0O11',
-    '-0B1001',
 ])
 def test_bad_number_suffixes(
     parse_tokens,
@@ -27,32 +24,34 @@ def test_bad_number_suffixes(
     default_options,
     primitives_usages,
     number,
+    number_sign,
     mode,
 ):
     """Ensures that numbers with suffix not in lowercase raise a warning."""
-    file_tokens = parse_tokens(mode(primitives_usages.format(number)))
+    file_tokens = parse_tokens(
+        mode(primitives_usages.format(number_sign(number))),
+    )
 
     visitor = WrongNumberTokenVisitor(default_options, file_tokens=file_tokens)
     visitor.run()
 
     assert_errors(visitor, [BadNumberSuffixViolation])
-    assert_error_text(visitor, number.replace('-', ''))
+    assert_error_text(visitor, number.lstrip('-').lstrip('+'))
 
 
 @pytest.mark.parametrize('number', [
+    '1234567890',
+
     '0xFF',
-    '1.5e+10',
+    '1.5e10',
     '0o11',
     '0b1001',
-    '-0xAF',
-    '-3e+10',
-    '-0o11',
-    '-0b1111',
 
     # Regression for 557:
     # https://github.com/wemake-services/wemake-python-styleguide/issues/557
     '0xE',
-    '-0xB',
+    '0x1E',
+    '0xB1',
 ])
 def test_correct_number_suffixes(
     parse_tokens,
@@ -60,41 +59,13 @@ def test_correct_number_suffixes(
     default_options,
     primitives_usages,
     number,
+    number_sign,
     mode,
 ):
     """Ensures that correct numbers are fine."""
-    file_tokens = parse_tokens(mode(primitives_usages.format(number)))
-
-    visitor = WrongNumberTokenVisitor(default_options, file_tokens=file_tokens)
-    visitor.run()
-
-    assert_errors(visitor, [])
-
-
-@pytest.mark.parametrize('code', [
-    'print("0XFF")',
-    'regular = "XOBE"',
-])
-@pytest.mark.parametrize('number', [
-    '0xFF',
-    '1.5e+10',
-    '0o11',
-    '0b1001',
-    '-0xAF',
-    '-3e+10',
-    '-0o11',
-    '-0b1111',
-])
-def test_similar_strings(
-    parse_tokens,
-    assert_errors,
-    default_options,
-    code,
-    number,
-    mode,
-):
-    """Ensures that strings are fine."""
-    file_tokens = parse_tokens(mode(code.format(number)))
+    file_tokens = parse_tokens(
+        mode(primitives_usages.format(number_sign(number))),
+    )
 
     visitor = WrongNumberTokenVisitor(default_options, file_tokens=file_tokens)
     visitor.run()

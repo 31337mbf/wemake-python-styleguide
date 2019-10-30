@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import tokenize
+import types
 from collections import defaultdict
-from typing import ClassVar, DefaultDict, Dict, List, Sequence, Set, Tuple
+from typing import (
+    ClassVar,
+    DefaultDict,
+    Dict,
+    FrozenSet,
+    List,
+    Mapping,
+    Sequence,
+    Tuple,
+)
 
 from typing_extensions import final
 
-from wemake_python_styleguide.logics.tokens import only_contains
+from wemake_python_styleguide.logic.tokens import only_contains
 from wemake_python_styleguide.violations.consistency import (
     ExtraIndentationViolation,
     WrongBracketPositionViolation,
@@ -15,17 +25,17 @@ from wemake_python_styleguide.visitors.base import BaseTokenVisitor
 
 TokenLines = DefaultDict[int, List[tokenize.TokenInfo]]
 
-MATCHING: Dict[int, int] = {
+MATCHING: Mapping[int, int] = types.MappingProxyType({
     tokenize.LBRACE: tokenize.RBRACE,
     tokenize.LSQB: tokenize.RSQB,
     tokenize.LPAR: tokenize.RPAR,
-}
+})
 
-ALLOWED_EMPTY_LINE_TOKENS: Set[int] = {
+ALLOWED_EMPTY_LINE_TOKENS: FrozenSet[int] = frozenset((
     tokenize.NL,
     tokenize.NEWLINE,
     *MATCHING.values(),
-}
+))
 
 
 def _get_reverse_bracket(bracket: tokenize.TokenInfo) -> int:
@@ -58,8 +68,18 @@ class ExtraIndentationVisitor(BaseTokenVisitor):
         super().__init__(*args, **kwargs)
         self._offsets: Dict[int, tokenize.TokenInfo] = {}
 
+    def visit(self, token: tokenize.TokenInfo) -> None:
+        """
+        Goes through all tokens to find wrong indentation.
+
+        Raises:
+            ExtraIndentationViolation
+
+        """
+        self._check_extra_indentation(token)
+
     def _check_extra_indentation(self, token: tokenize.TokenInfo) -> None:
-        lineno, offset = token.start
+        lineno, _offset = token.start
         if lineno not in self._offsets:
             self._offsets[lineno] = token
 
@@ -96,16 +116,6 @@ class ExtraIndentationVisitor(BaseTokenVisitor):
                 continue
             self._check_individual_line(lines, line, index)
 
-    def visit(self, token: tokenize.TokenInfo) -> None:
-        """
-        Goes through all tokens to find wrong indentation.
-
-        Raises:
-            ExtraIndentationViolation
-
-        """
-        self._check_extra_indentation(token)
-
 
 @final
 class BracketLocationVisitor(BaseTokenVisitor):
@@ -123,12 +133,22 @@ class BracketLocationVisitor(BaseTokenVisitor):
         super().__init__(*args, **kwargs)
         self._lines: TokenLines = defaultdict(list)
 
+    def visit(self, token: tokenize.TokenInfo) -> None:
+        """
+        Goes trough all tokens to separate them by line numbers.
+
+        Raises:
+            WrongBracketPositionViolation
+
+        """
+        self._lines[token.start[0]].append(token)
+
     def _annotate_brackets(
         self,
         tokens: List[tokenize.TokenInfo],
     ) -> Dict[int, int]:
         """Annotates each opening bracket with the nested level index."""
-        brackets = {bracket: 0 for bracket in MATCHING.keys()}
+        brackets = {bracket: 0 for bracket in MATCHING}
         for token in tokens:
             if token.exact_type in MATCHING.keys():
                 brackets[token.exact_type] += 1
@@ -158,13 +178,3 @@ class BracketLocationVisitor(BaseTokenVisitor):
     def _post_visit(self) -> None:
         for _, tokens in self._lines.items():
             self._check_individual_line(tokens)
-
-    def visit(self, token: tokenize.TokenInfo) -> None:
-        """
-        Goes trough all tokens to separate them by line numbers.
-
-        Raises:
-            WrongBracketPositionViolation
-
-        """
-        self._lines[token.start[0]].append(token)

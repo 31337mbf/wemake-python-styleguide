@@ -2,34 +2,43 @@
 
 .. mdinclude:: ../README.md
 
+
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 1
   :caption: Userguide:
   :hidden:
 
   pages/usage/setup.rst
-  pages/usage/integrations.rst
-  pages/violations/index.rst
-  pages/constants.rst
-  pages/options/config.rst
+  pages/usage/configuration.rst
+  pages/usage/violations/index.rst
+  pages/usage/formatter.rst
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Integrations:
+  :hidden:
+
+  pages/usage/integrations/index.rst
+
 
 .. toctree::
   :maxdepth: 2
   :caption: Developer's guide:
   :hidden:
 
-  pages/api.rst
+  pages/api/index.rst
 
 .. toctree::
   :maxdepth: 1
   :caption: Changelog:
   :hidden:
 
-  pages/changelog.rst
+  pages/changelog/index.rst
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

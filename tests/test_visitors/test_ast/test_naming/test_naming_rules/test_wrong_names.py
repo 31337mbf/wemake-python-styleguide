@@ -2,14 +2,17 @@
 
 import pytest
 
-from wemake_python_styleguide.constants import VARIABLE_NAMES_BLACKLIST
 from wemake_python_styleguide.violations.naming import (
     WrongVariableNameViolation,
 )
 from wemake_python_styleguide.visitors.ast.naming import WrongNameVisitor
 
 
-@pytest.mark.parametrize('wrong_name', VARIABLE_NAMES_BLACKLIST)
+@pytest.mark.parametrize('wrong_name', [
+    'value',
+    'no',
+    'data',
+])
 def test_wrong_variable_name(
     assert_errors,
     assert_error_text,

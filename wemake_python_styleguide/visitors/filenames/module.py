@@ -3,7 +3,7 @@
 from typing_extensions import final
 
 from wemake_python_styleguide import constants
-from wemake_python_styleguide.logics.naming import access, logical
+from wemake_python_styleguide.logic.naming import access, logical
 from wemake_python_styleguide.violations.naming import (
     ConsecutiveUnderscoresInNameViolation,
     PrivateNameViolation,
@@ -21,6 +21,24 @@ from wemake_python_styleguide.visitors.base import BaseFilenameVisitor
 @final
 class WrongModuleNameVisitor(BaseFilenameVisitor):
     """Checks that modules have correct names."""
+
+    def visit_filename(self) -> None:
+        """
+        Checks a single module's filename.
+
+        Raises:
+            TooShortModuleNameViolation
+            WrongModuleMagicNameViolation
+            WrongModuleNameViolation
+            WrongModuleNamePatternViolation
+            WrongModuleNameUnderscoresViolation
+            UnderscoredNumberNameViolation
+            TooLongNameViolation
+
+        """
+        self._check_module_name()
+        self._check_module_name_length()
+        self._check_module_name_pattern()
 
     def _check_module_name(self) -> None:
         if logical.is_wrong_name(self.stem, constants.MODULE_NAMES_BLACKLIST):
@@ -55,21 +73,3 @@ class WrongModuleNameVisitor(BaseFilenameVisitor):
 
         if logical.does_contain_underscored_number(self.stem):
             self.add_violation(UnderscoredNumberNameViolation(text=self.stem))
-
-    def visit_filename(self) -> None:
-        """
-        Checks a single module's filename.
-
-        Raises:
-            TooShortModuleNameViolation
-            WrongModuleMagicNameViolation
-            WrongModuleNameViolation
-            WrongModuleNamePatternViolation
-            WrongModuleNameUnderscoresViolation
-            UnderscoredNumberNameViolation
-            TooLongNameViolation
-
-        """
-        self._check_module_name()
-        self._check_module_name_length()
-        self._check_module_name_pattern()

@@ -11,7 +11,7 @@ you will need to get familiar with these APIs:
 
 It is also recommended to take a look at these resources:
 
-- Visual tool to explore [python's ast](https://python-ast-explorer.com/) (very useful!)
+- Visual tool to explore [python's ast](https://python-ast-explorer.com/) (very useful, but outdated!)
 - Missing `ast` [guide](https://greentreesnakes.readthedocs.io/en/latest/)
 - List of `python` [static analysis tools](https://github.com/vintasoftware/python-linters-and-code-analysis)
 - List of `flake8` [extensions](https://github.com/DmytroLitvinov/awesome-flake8-extensions)
@@ -19,10 +19,10 @@ It is also recommended to take a look at these resources:
 
 ## Developer's documentation
 
-Make sure that you are familiar with [developer's documentation](https://wemake-python-styleguide.readthedocs.io/en/latest/pages/api.html).
+Make sure that you are familiar with [developer's documentation](https://wemake-python-stylegui.de/en/latest/pages/api/index.html).
 
 That's a main starting point to the future development.
-You can jump start into the development of new rules by reading ["Creating a new rule tutorial"](https://wemake-python-styleguide.readthedocs.io/en/latest/pages/tutorial.html).
+You can jump start into the development of new rules by reading ["Creating a new rule tutorial"](https://wemake-python-stylegui.de/en/latest/pages/api/tutorial.html).
 
 
 ## Dependencies
@@ -43,8 +43,13 @@ If you are adding a `flake8` plugin dependency (not dev-dependency),
 you will have to do several things:
 
 1. Install plugin with `poetry`
-2. Add docs about the error code to the `errors/index.rst`
+2. Add docs about the error code to the `pages/usage/violations/index.rst`
 3. Add a test that the plugin is working to `tests/test_plugins.py`
+
+
+## One magic command
+
+Run `make test` to run everything we have!
 
 
 ## Tests
@@ -70,13 +75,14 @@ These steps are mandatory during the CI.
 
 ## Architecture
 
-We use [layer-lint](https://layer-linter.readthedocs.io/en/latest/usage.html)
+We use [import-linter](https://import-linter.readthedocs.io)
 to enforce strict layered architecture.
 
 ```bash
-layer-lint wemake_python_styleguide
+lint-imports
 ```
 
+See `.importlinter` file for contracts definition.
 All contracts must be valid for each commit.
 This step is mandatory during the CI.
 
@@ -91,6 +97,16 @@ mypy wemake_python_styleguide
 ```
 
 This step is mandatory during the CI.
+
+
+## Helpers
+
+We also have several helpers to make your development work easier:
+
+- `./scripts/parse.py` is used to visualize `ast` nodes in other python modules,
+  usage: `python ./scripts/parse.py my_module.py`
+- `./scripts/tokens.py` is used to visualize tokens in other python modules,
+  usage: `python ./scripts/tokens.py my_module.py`
 
 
 ## Submitting your code
@@ -113,15 +129,6 @@ which frees us from merging hell and long-living branches.
 
 In this method, the latest version of the app is always in the `master` branch.
 
-### Making patches to older versions
-
-If you want to release a patch for an older version, that what you have to do:
-
-1. Check out the previous `git tag`
-2. Create a new branch relative to this tag
-3. Merge it into master, there might be some `rebase` and `cherry-pick`
-   involved during this operation
-
 ### Before submitting
 
 Before submitting your code please do the following steps:
@@ -135,8 +142,42 @@ Before submitting your code please do the following steps:
 7. Run `pytest` again to make sure it is still working
 8. Run `mypy` to ensure that types are correct
 9. Run `flake8` to ensure that style is correct
-10. Run `layer-lint` to ensure that architecture contracts are correct
+10. Run `lint-imports` to ensure that architecture contracts are correct
 11. Run `doc8` to ensure that docs are correct
+12. Run `xenon` to ensure that code quality is `A` (good enough)
+
+You can run everything at once with `make test`,
+see our `Makefile` for more details.
+
+
+## Notes for maintainers
+
+This section is intended for maintainers only.
+If you are not a maintainer (or do not know what it means),
+just skip it. You are not going to miss anything useful.
+
+### Releasing a new version
+
+Releasing a new version requires several steps:
+
+1. Ensure that `CHANGELOG.md` is up-to-date and contains all changes
+2. Bump version in `pyproject.toml`
+3. Bump version in `Dockerfile` that is used for Github Action
+4. Run `git commit -a -m 'Version x.y.z release' && git tag -a x.y.x -m 'Version x.y.z' && git push && git push --tags`
+5. Run `poetry publish --build`
+6. Edit Github Release and mark that new action version is released
+
+Done! New version is released.
+
+### Making patches to older versions
+
+If you want to release a patch for an older version, that what you have to do:
+
+1. Check out the previous `tag`
+2. Create a new branch relative to this tag:
+   `git checkout $TAG_NAME; git checkout -b $RELEASE_NAME`
+3. Merge it into master, there might be some `rebase` and `cherry-pick`
+   involved during this operation
 
 
 ## Other help
@@ -145,3 +186,18 @@ You can contribute by spreading a word about this library.
 It would also be a huge contribution to write
 a short article on how you are using this project.
 You can also share your best practices with us.
+
+You can also consider donations to the project:
+- <https://opencollective.com/wemake-python-styleguide>
+- <https://issuehunt.io/r/wemake-services/wemake-python-styleguide>
+
+Number of current supporters:
+
+[![Supporters](https://img.shields.io/opencollective/all/wemake-python-styleguide.svg?color=gold&label=supporters)](https://opencollective.com/wemake-python-styleguide)
+
+
+## List of contributors
+
+Here are the awesome people who contributed to our project:
+
+[![List of contributors](https://opencollective.com/wemake-python-styleguide/contributors.svg?width=890&button=0)](https://github.com/wemake-services/wemake-python-styleguide/graphs/contributors)

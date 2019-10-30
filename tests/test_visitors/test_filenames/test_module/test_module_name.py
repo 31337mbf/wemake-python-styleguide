@@ -11,7 +11,7 @@ from wemake_python_styleguide.visitors.filenames.module import (
 
 @pytest.mark.parametrize('filename', [
     'query.py',
-    '/home/user/logics.py',
+    '/home/user/logic.py',
     'partial/views.py',
     'C:/path/package/module.py',
 ])
@@ -30,7 +30,10 @@ def test_restricted_filename(
     default_options,
 ):
     """Testing that some file names are restricted."""
-    visitor = WrongModuleNameVisitor(default_options, filename=filename + '.py')
+    visitor = WrongModuleNameVisitor(
+        default_options,
+        filename='{0}.py'.format(filename),
+    )
     visitor.run()
 
     assert_errors(visitor, [WrongModuleNameViolation])
