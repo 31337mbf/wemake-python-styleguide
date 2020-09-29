@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.complexity import (
@@ -72,7 +70,7 @@ else:
 @pytest.mark.parametrize('statements', [
     'print(1)\n    print(2)',
     'm.print(1)\n    m.print(2)\n    m.print(3)',
-    'm = 1\n    p = 2\n    c = 3',
+    'm = 1\n    p = 2\n    c = 3\n    x = 4',
 ])
 @pytest.mark.parametrize('code', [
     try_without_except,
@@ -82,6 +80,7 @@ else:
 ])
 def test_try_body_count_default(
     assert_errors,
+    assert_error_text,
     parse_ast_tree,
     default_options,
     code,
@@ -94,6 +93,38 @@ def test_try_body_count_default(
     visitor.run()
 
     assert_errors(visitor, [TooLongTryBodyViolation])
+
+
+@pytest.mark.parametrize('statements', [
+    'print(1)\n    print(2)',
+    'm.print(1)\n    m.print(2)',
+    'm = 1\n    p = 2',
+])
+@pytest.mark.parametrize('code', [
+    try_without_except,
+    simple_try_except,
+    try_except_with_else,
+    full_except_with_else,
+])
+def test_try_body_wrong_custom_options(
+    assert_errors,
+    assert_error_text,
+    parse_ast_tree,
+    options,
+    code,
+    statements,
+):
+    """Testing that default settings raise a warning."""
+    tree = parse_ast_tree(code.format(statements))
+
+    option_values = options(max_try_body_length=1)
+    visitor = TryExceptVisitor(option_values, tree=tree)
+    visitor.run()
+
+    assert_errors(visitor, [TooLongTryBodyViolation])
+    assert_error_text(
+        visitor, '2', baseline=option_values.max_try_body_length,
+    )
 
 
 @pytest.mark.parametrize('statements', [
@@ -152,9 +183,6 @@ def test_try_body_correct_default(
 
 
 @pytest.mark.parametrize('statements', [
-    'print(1)',
-    'm.print(1)',
-    'm = 1',
     'print(1)',
     'm.print(1)',
     'm = 1',

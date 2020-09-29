@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 These checks limit the Python's inconsistency.
 
@@ -48,7 +46,7 @@ Summary
    MultilineFunctionAnnotationViolation
    UppercaseStringModifierViolation
    WrongMultilineStringViolation
-   EmptyLineAfterCodingViolation
+   ModuloStringFormatViolation
    InconsistentReturnViolation
    InconsistentYieldViolation
    ImplicitStringConcatenationViolation
@@ -57,7 +55,7 @@ Summary
    UselessExceptCaseViolation
    UselessOperatorsViolation
    InconsistentReturnVariableViolation
-   ImplicitTernaryViolation
+   WalrusViolation
    ImplicitComplexCompareViolation
    ReversedComplexCompareViolation
    WrongLoopIterTypeViolation
@@ -73,11 +71,17 @@ Summary
    MeaninglessNumberOperationViolation
    OperationSignNegationViolation
    VagueImportViolation
-   AdditionAssignmentOnListViolation
+   LineStartsWithDotViolation
    RedundantSubscriptViolation
    AugmentedAssignPatternViolation
    UnnecessaryLiteralsViolation
    MultilineLoopViolation
+   IncorrectYieldFromTargetViolation
+   ConsecutiveYieldsViolation
+   BracketBlankLineViolation
+   IterableUnpackingViolation
+   LineCompriseCarriageReturnViolation
+   FloatZeroViolation
 
 Consistency checks
 ------------------
@@ -105,7 +109,7 @@ Consistency checks
 .. autoclass:: MultilineFunctionAnnotationViolation
 .. autoclass:: UppercaseStringModifierViolation
 .. autoclass:: WrongMultilineStringViolation
-.. autoclass:: EmptyLineAfterCodingViolation
+.. autoclass:: ModuloStringFormatViolation
 .. autoclass:: InconsistentReturnViolation
 .. autoclass:: InconsistentYieldViolation
 .. autoclass:: ImplicitStringConcatenationViolation
@@ -114,7 +118,7 @@ Consistency checks
 .. autoclass:: UselessExceptCaseViolation
 .. autoclass:: UselessOperatorsViolation
 .. autoclass:: InconsistentReturnVariableViolation
-.. autoclass:: ImplicitTernaryViolation
+.. autoclass:: WalrusViolation
 .. autoclass:: ImplicitComplexCompareViolation
 .. autoclass:: ReversedComplexCompareViolation
 .. autoclass:: WrongLoopIterTypeViolation
@@ -130,11 +134,17 @@ Consistency checks
 .. autoclass:: MeaninglessNumberOperationViolation
 .. autoclass:: OperationSignNegationViolation
 .. autoclass:: VagueImportViolation
-.. autoclass:: AdditionAssignmentOnListViolation
+.. autoclass:: LineStartsWithDotViolation
 .. autoclass:: RedundantSubscriptViolation
 .. autoclass:: AugmentedAssignPatternViolation
 .. autoclass:: UnnecessaryLiteralsViolation
 .. autoclass:: MultilineLoopViolation
+.. autoclass:: IncorrectYieldFromTargetViolation
+.. autoclass:: ConsecutiveYieldsViolation
+.. autoclass:: BracketBlankLineViolation
+.. autoclass:: IterableUnpackingViolation
+.. autoclass:: LineCompriseCarriageReturnViolation
+.. autoclass:: FloatZeroViolation
 
 """
 
@@ -341,10 +351,17 @@ class RequiredBaseClassViolation(ASTViolation):
     """
     Forbids to write classes without base classes.
 
+    Please, note that this rule has nothing to do with ``python2``.
+    We care only about consistency here.
+
     Reasoning:
         We just need to decide how to do it.
         We need a single and unified rule about base classes.
         We have decided to stick to the explicit base class notation.
+        Why? Because it is consistent with other use-cases.
+        When we have a base class ``A``, we write ``class MyClass(A):``.
+        When we have no base class, we have an implicit ``object`` base class.
+        So, we still use the same syntax: ``class MyClass(object):``.
 
     Solution:
         Add a base class.
@@ -356,9 +373,6 @@ class RequiredBaseClassViolation(ASTViolation):
 
         # Wrong:
         class Some: ...
-
-    See also:
-        https://google.github.io/styleguide/pyguide.html#39-classes
 
     .. versionadded:: 0.1.0
 
@@ -544,15 +558,14 @@ class UselessCompareViolation(ASTViolation):
 
     Example::
 
+        # Correct:
+        do_something()
+
         # Wrong:
-        a = 1
         if a < a:
             do_something()
         else:
             do_something_else()
-
-        # Correct:
-        do_something()
 
     .. versionadded:: 0.3.0
 
@@ -622,7 +635,7 @@ class ConstantConditionViolation(ASTViolation):
 
     """
 
-    error_template = 'Conditional always evaluates to same result'
+    error_template = 'Found conditional that always evaluates to same result'
     code = 314
 
 
@@ -653,7 +666,7 @@ class ObjectInBaseClassesListViolation(ASTViolation):
 
     """
 
-    error_template = 'Founded extra `object` in parent classes list'
+    error_template = 'Found extra `object` in parent classes list'
     code = 315
 
 
@@ -747,6 +760,13 @@ class ParametersIndentationViolation(ASTViolation):
             third_variable,
             last_item,
         ], end='')
+
+        # Correct complex case:
+
+        @pytest.mark.parametrize(('boolean_arg', 'string_arg'), [
+             (True, "string"),
+             (False, "another string"),
+        ])
 
     Everything else is considered a violation.
     This rule checks: lists, sets, tuples, dicts, calls,
@@ -954,52 +974,46 @@ class WrongMultilineStringViolation(TokenizeViolation):
 
 
 @final
-class EmptyLineAfterCodingViolation(TokenizeViolation):
+class ModuloStringFormatViolation(ASTViolation):
     """
-    Enforces to have an extra empty line after the ``coding`` comment.
+    Forbids to use ``%`` formatting on strings.
+
+    We check for string formatting. We try not to issue false positives.
+    It is better for us to ignore a real (but hard to detect) case,
+    then marking a valid one as incorrect.
+
+    Internally we check for this pattern in string definitions::
+
+        %[(name)] [flags] [width] [.precision] [{h | l}] type
+
+    This is a ``C`` format specification.
+    Related to :class:`~FormattedStringViolation` and solves the same problem.
 
     Reasoning:
-        Since we use
-        `flake8-coding <https://github.com/tk0miya/flake8-coding>`_
-        as a part of our linter
-        we care about extra space after this coding comment.
-        This is done for pure consistency.
-
-        Why should we even care about this magic coding comment?
-        For several reasons.
-
-        First, explicit encoding is always better that an implicit one,
-        different countries still use some non utf-8 encodings as a default.
-        But, people might override it with other encodings in a comment.
-        Do you know how much pain it can cause to you?
-
-        We still know that ``python3`` uses ``utf-8`` inside.
-
-        Second, some tools break because of this incorrect encoding comment.
-        Including, ``django``, ``flake8``, and ``tokenize`` core module.
-        It is very hard to notice these things when they happen.
+        You must use a single formatting method across your project.
 
     Solution:
-        Add an empty line between ``coding`` magic comment and your code.
+        We enforce to use string ``.format()`` method for this task.
 
     Example::
 
         # Correct:
-        # coding: utf-8
-
-        SOME_VAR = 1
+        'some string', 'your name: {0}', 'data: {data}'
 
         # Wrong:
-        # coding: utf-8
-        SOME_VAR = 1
+       'my name is: %s', 'data: %(data)d'
 
-    .. versionadded:: 0.7.0
+    See also:
+        https://github.com/gforcada/flake8-pep3101
+        https://msdn.microsoft.com/en-us/library/56e442dc.aspx
+        https://docs.python.org/3/library/stdtypes.html#old-string-formatting
+        https://pyformat.info/
+
+    .. versionadded:: 0.14.0
 
     """
 
-    error_template = (
-        'Found missing empty line between `coding` magic comment and code'
-    )
+    error_template = 'Found `%` string formatting'
     code = 323
 
 
@@ -1138,10 +1152,20 @@ class UselessContinueViolation(ASTViolation):
                 continue
             print(number)
 
+        for number in [1, 2, 3]:
+            with suppress(Exception):
+                do_smth(some_obj)
+
         # Wrong:
         for number in [1, 2, 3]:
             print(number)
             continue
+
+        for number in [1, 2, 3]:
+            try:
+                do_smth(some_obj)
+            except Exception:
+                continue
 
     .. versionadded:: 0.7.0
 
@@ -1259,6 +1283,15 @@ class InconsistentReturnVariableViolation(ASTViolation):
     """
     Forbids local variable that are only used in ``return`` statements.
 
+    We also allow cases when variable is assigned,
+    then there are some other statements without direct variable access,
+    and the variable is returned.
+    We reserve this use-case to be able
+    to do some extra work before the function returns.
+
+    We also allow to return partial, sorted,
+    or modified tuple items that are defined just above.
+
     Reasoning:
         This is done for consistency and more readable source code.
 
@@ -1271,6 +1304,11 @@ class InconsistentReturnVariableViolation(ASTViolation):
         def some_function():
             return 1
 
+        def other_function():
+            some_value = 1
+            do_something(some_value)
+            return some_value
+
         # Wrong:
         def some_function():
             some_value = 1
@@ -1278,42 +1316,47 @@ class InconsistentReturnVariableViolation(ASTViolation):
 
 
     .. versionadded:: 0.9.0
+    .. versionchanged:: 0.14.0
 
     """
 
-    error_template = (
-        'Found local variable that are only used in `return` statements'
-    )
+    error_template = 'Found variables that are only used for `return`: {0}'
     code = 331
 
 
 @final
-class ImplicitTernaryViolation(ASTViolation):
+class WalrusViolation(ASTViolation):
     """
-    Forbids to have implicit ternary expressions.
+    Forbids local variable that are only used in ``return`` statements.
+
+    This violation can only be thrown on ``python3.8+``.
 
     Reasoning:
-        This is done for consistency and readability reasons.
-        We believe that explicit ternary is better for readability.
-        This also allows you to identify hidden conditionals in your code.
+        Code with ``:=`` is hardly readable.
+        It has big problems with scoping and reading order.
+        And it can lead to a huge mess inside your code.
+        Python is not expression-based.
 
     Solution:
-        Refactor to use explicit ternary, or ``if`` condition.
+        Don't use fancy stuff, use good old assignments.
 
     Example::
 
         # Correct:
-        some = one if cond() else two
+        some = call()
+        if some:
+            print(some)
 
         # Wrong:
-        some = cond() and one or two
+        if some := call():
+            print(some)
 
-    .. versionadded:: 0.10.0
+    .. versionadded:: 0.14.0
 
     """
 
+    error_template = 'Found walrus operator'
     code = 332
-    error_template = 'Found implicit ternary expression'
 
 
 @final
@@ -1500,14 +1543,16 @@ class WrongMethodOrderViolation(ASTViolation):
 
     - ``__new__``
     - ``__init__``
-    - public and megic methods
+    - ``__call__``
+    - ``__await__``
+    - public and magic methods
     - protected methods
     - private methods (we discourage using them)
 
-    We follow "Newspaper order" when the most important things come the first.
+    We follow "Newspaper order" where the most important things come first.
 
     Reasoning:
-        It is hard to read classes which API declarations is bloated with
+        It is hard to read classes where API declarations are bloated with
         implementation details. We need to see the important stuff first,
         then we can go deeper in case we are interested.
 
@@ -1775,10 +1820,20 @@ class VagueImportViolation(ASTViolation):
     """
     Forbids imports that may cause confusion outside of the module.
 
+    Names that we forbid to import:
+
+    - Common names like ``dumps`` and ``loads``
+    - Names starting with ``to_`` and ``from_``
+    - Too short names like ``Q`` or ``F``, but we are fine with ``_``
+
     Reasoning:
         See ``datetime.*`` in code? You know that it's from datetime.
         See ``BaseView`` in a Django project? You know where it is from.
         See ``loads``? It can be anything: ``yaml``, ``toml``, ``json``, etc.
+        We are also enforcing consitency with our naming too-short rules here.
+
+    Solution:
+        Use package level imports or import aliases.
 
     See
     :py:data:`~wemake_python_styleguide.constants.VAGUE_IMPORTS_BLACKLIST`
@@ -1788,13 +1843,14 @@ class VagueImportViolation(ASTViolation):
 
         # Correct:
         import json
-        json.loads(content)
+        import dumps  # package names are not checked
+        from json import loads as json_loads
 
         # Wrong:
         from json import loads
-        loads(content)
 
     .. versionadded:: 0.13.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -1803,27 +1859,41 @@ class VagueImportViolation(ASTViolation):
 
 
 @final
-class AdditionAssignmentOnListViolation(ASTViolation):
+class LineStartsWithDotViolation(TokenizeViolation):
     """
-    Forbids usage of += with list arguments.
+    Forbids to start lines with a dot.
 
     Reasoning:
-        ``+=`` works like ``extend()`` method.
-        Why not just use ``extend()`` instead of ``+=`` to be consistent.
+        We enforce strict consitency rules about how to break lines.
+        We also enforce strict rules about multi-line parameters.
+        Starting new lines with the dot means that this rule is broken.
+
+    Solution:
+        Use ``()`` to break lines in a complex expression.
 
     Example::
 
         # Correct:
-        some_list.extend([1, 2, 3])
+        some = MyModel.objects.filter(
+            ...,
+        ).exclude(
+            ...,
+        ).annotate(
+            ...,
+        )
 
-        # Wrong:
-        some_list += [1, 2, 3]
+        # Wrong
+        some = (
+            MyModel.objects.filter(...)
+                .exclude(...)
+                .annotate(...)
+        )
 
     .. versionadded:: 0.13.0
 
     """
 
-    error_template = 'Found addition assignment with list argument'
+    error_template = 'Found a line that starts with a dot'
     code = 348
 
 
@@ -1849,7 +1919,7 @@ class RedundantSubscriptViolation(ASTViolation):
 
     """
 
-    error_template = 'Found redundant subscript slice: {0}'
+    error_template = 'Found redundant subscript slice'
     code = 349
 
 
@@ -1902,7 +1972,7 @@ class UnnecessaryLiteralsViolation(ASTViolation):
 
     """
 
-    error_template = 'Found unnecessary literals.'
+    error_template = 'Found unnecessary literals'
     code = 351
 
 
@@ -1920,12 +1990,11 @@ class MultilineLoopViolation(ASTViolation):
 
     Example::
 
-        # Correct
-
+        # Correct:
         for num in some_function(arg1, arg2):
             ...
 
-        # Wrong
+        # Wrong:
         for num in range(
             arg1,
             arg2,
@@ -1936,5 +2005,179 @@ class MultilineLoopViolation(ASTViolation):
 
     """
 
-    error_template = 'Forbids multiline loops'
+    error_template = 'Found multiline loop'
     code = 352
+
+
+@final
+class IncorrectYieldFromTargetViolation(ASTViolation):
+    """
+    Forbids to use ``yield from`` with several nodes.
+
+    We allow to ``yield from`` tuples,
+    names, attributes, calls, and subscripts.
+
+    Reasoning:
+        We enforce consitency when yielding values
+        from tuple instead of any other types.
+        It also might be an error when you try to ``yield from`` something
+        that is not iterable.
+
+    Solution:
+        Use allowed node types with ``yield from``.
+
+    Example::
+
+        # Correct:
+        yield from (1, 2, 3)
+        yield from some
+
+        # Wrong:
+        yield from [1, 2, 3]
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found incorrect `yield from` target'
+    code = 353
+
+
+@final
+class ConsecutiveYieldsViolation(ASTViolation):
+    """
+    Forbids to have consecutive ``yield`` expressions.
+
+    We raise this violation when we find at least
+    two consecutive ``yield`` expressions.
+
+    Reasoning:
+        One can write multiple ``yield`` nodes in a row.
+        That's incosistent. Because we have ``yield from`` form.
+
+    Solution:
+        It can be easily changed to ``yield from (...)`` format.
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found consecutive `yield` expressions'
+    code = 354
+
+
+@final
+class BracketBlankLineViolation(TokenizeViolation):
+    """
+    Forbids useless blank lines before and after brackets.
+
+    Reasoning:
+        We do this for consistency.
+
+    Solution:
+        Remove blank lines from the start and from the end of a collection.
+
+    Example::
+
+        # Correct:
+        arr = [
+            1,
+            2,
+        ]
+
+        # Wrong:
+        arr = [
+
+            1,
+            2,
+
+        ]
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found an unnecessary blank line before a bracket'
+    code = 355
+
+
+@final
+class IterableUnpackingViolation(ASTViolation):
+    """
+    Forbids unnecessary iterable unpacking.
+
+    Reasoning:
+        We do this for consistency.
+
+    Solution:
+        Do not use iterables unpacking, when it's not necessary.
+
+    Example::
+
+        # Correct:
+        [1, *numbers, 99]
+        {*iterable, *other_iterable}
+        list(iterable)
+        first, *iterable = other_iterable
+
+        # Wrong:
+        [*iterable]
+        *iterable, = other_iterable
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found an unnecessary iterable unpacking'
+    code = 356
+
+
+@final
+class LineCompriseCarriageReturnViolation(TokenizeViolation):
+    r"""
+    Forbids to use ``\r`` (carriage return) in line breaks.
+
+    Reasoning:
+        We enforce Unix-style newlines.
+        We only use newlines (``\n``), not carriage returns.
+        So ``\r`` line breaks not allowed in code.
+
+    Solution:
+        Use only ``\n`` (not ``\r\n`` or ``\r``) to break lines.
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = r'Found a ``\r`` (carriage return) line break'
+    code = 357
+
+
+@final
+class FloatZeroViolation(TokenizeViolation):
+    """
+    Forbids to use float zeros: ``0.0``.
+
+    Reasoning:
+        Float zeros can be used as variable values which may lead to
+        typing bugs when trying to perform an operation between
+        an int number and the float zero.
+
+    Solution:
+        Use int zeros (0). If a float is needed, it should be cast
+        explicitly.
+
+    Example::
+
+        # Correct:
+        zero = 0
+
+        # Wrong:
+        zero = 0.0
+
+    .. versionadded:: 0.15.0
+
+    """
+
+    code = 358
+    error_template = 'Found a float zero (0.0)'

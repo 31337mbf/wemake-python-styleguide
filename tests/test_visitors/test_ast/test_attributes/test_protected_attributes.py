@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.visitors.ast.attributes import (
@@ -109,6 +107,7 @@ class Test(object):
 """
 
 
+@pytest.mark.filterwarnings('ignore::SyntaxWarning')
 @pytest.mark.parametrize('code', [
     protected_attribute_assigned,
     protected_attribute_accessed,

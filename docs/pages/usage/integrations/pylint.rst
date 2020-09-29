@@ -8,7 +8,7 @@ Yes, we know that it is awesome. But, it has some drawbacks:
    Since we use ``mypy`` there is no sense in this feature.
    Without this feature a lot
    of other ``pylint`` features looses its point as well
-2. There are less exisitng plugins for ``pylint`` than for ``flake8``
+2. There are less existing plugins for ``pylint`` than for ``flake8``
 3. It uses custom ``ast`` parser and library, which can be problematic
 4. It is not strict enough for us.
    So, we will have to write our own plugin no matter what platform we use
@@ -24,7 +24,7 @@ The difference is in:
 - Error codes
 - Python versions, because ``pylint`` covers more versions
 - ``wemake-python-styleguide`` is stricter and finds more
-  violatons than ``pylint``
+  violations than ``pylint``
 
 We also run ``pylint`` on the ``wemake-python-styleguide`` source code
 with the help of `deepsource.io <https://deepsource.io/gh/wemake-services/wemake-python-styleguide>`_
@@ -32,3 +32,13 @@ and keep the errors count at 0.
 
 .. image:: https://static.deepsource.io/deepsource-badge-light.svg
     :target: https://deepsource.io/gh/wemake-services/wemake-python-styleguide/?ref=repository-badge
+
+flakehell
+~~~~~~~~~
+
+You can also use ``pylint`` together with our linter if you
+want so (however, we do not recommend to use ``pylint`` at all)
+with the help of ``flakehell``.
+
+See `flakehell docs <https://github.com/life4/flakehell>`_
+for more information.

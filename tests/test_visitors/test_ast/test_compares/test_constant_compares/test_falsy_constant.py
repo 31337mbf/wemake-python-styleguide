@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
+from wemake_python_styleguide.compat.constants import PY38
 from wemake_python_styleguide.violations.refactoring import (
     FalsyConstantCompareViolation,
     WrongIsCompareViolation,
@@ -10,13 +9,26 @@ from wemake_python_styleguide.visitors.ast.compares import (
     WrongConstantCompareVisitor,
 )
 
-wrong_comparators = (
+wrong_comparators = [
     ('some', '[]'),
     ('some', '{}'),  # noqa: P103
     ('some', '()'),
     ('[]', 'some'),
     ('{}', 'some'),  # noqa: P103
     ('()', 'some'),
+]
+
+if PY38:
+    wrong_comparators.extend([
+        ('some', '(x := [])'),
+        ('(x := [])', 'some'),
+    ])
+
+correct_walrus = pytest.param(
+    ['(x := [1, 2])', 'some'],
+    marks=pytest.mark.skipif(
+        not PY38, reason='walrus appeared in 3.8',
+    ),
 )
 
 
@@ -37,6 +49,7 @@ def test_falsy_constant(
     assert_errors(visitor, [FalsyConstantCompareViolation])
 
 
+@pytest.mark.filterwarnings('ignore::SyntaxWarning')
 @pytest.mark.parametrize('comparators', wrong_comparators)
 def test_falsy_constant_is(
     assert_errors,
@@ -74,6 +87,7 @@ def test_falsy_constant_not_eq(
     assert_errors(visitor, [])
 
 
+@pytest.mark.filterwarnings('ignore::SyntaxWarning')
 @pytest.mark.parametrize('comparators', [
     ('some', '[1, 2]'),
     ('some', '{1, 2}'),
@@ -92,8 +106,8 @@ def test_falsy_constant_not_eq(
     ('some', 'other.attr'),
     ('some', 'other.method()'),
     ('some', 'other[0]'),
-
     ('None', 'some'),
+    correct_walrus,
 ])
 def test_correct_constant_compare(
     assert_errors,

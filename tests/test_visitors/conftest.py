@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from typing import Sequence
+from typing import Optional, Sequence
 
 import pytest
 
@@ -42,8 +40,15 @@ def assert_errors():
 @pytest.fixture(scope='session')
 def assert_error_text():
     """Helper function to assert visitor violation's text."""
-    def factory(visitor: BaseVisitor, text: str):
-        assert len(visitor.violations) == 1
+    def factory(
+        visitor: BaseVisitor,
+        text: str,
+        baseline: Optional[int] = None,
+        *,
+        multiple: bool = False,
+    ):
+        if not multiple:
+            assert len(visitor.violations) == 1
 
         violation = visitor.violations[0]
         error_format = ': {0}'
@@ -54,35 +59,8 @@ def assert_error_text():
         reproduction = violation.__class__(
             node=violation._node,  # noqa: WPS437
             text=text,
+            baseline=baseline,
         )
         assert reproduction.message() == violation.message()
 
     return factory
-
-
-@pytest.fixture()
-def async_wrapper():
-    """Fixture to convert all regular functions into async ones."""
-    def factory(template: str) -> str:
-        return template.replace(
-            'def ', 'async def ',
-        ).replace(
-            'with ', 'async with ',
-        ).replace(
-            'for ', 'async for ',
-        )
-    return factory
-
-
-@pytest.fixture()
-def regular_wrapper():
-    """Fixture to return regular functions without modifications."""
-    def factory(template: str) -> str:
-        return template
-    return factory
-
-
-@pytest.fixture(params=['async_wrapper', 'regular_wrapper'])
-def mode(request):
-    """Fixture that returns either `async` or regular functions."""
-    return request.getfixturevalue(request.param)

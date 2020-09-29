@@ -1,17 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
-from wemake_python_styleguide.violations.refactoring import (
-    ImplicitSumViolation,
-)
+from wemake_python_styleguide.violations.refactoring import ImplicitSumViolation
 from wemake_python_styleguide.visitors.ast.loops import (
     WrongLoopDefinitionVisitor,
 )
 
 for_loop_template = """
 def function():
-    value = 0
     for index in some:
         {0}
 """

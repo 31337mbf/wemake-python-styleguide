@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Our very own ``flake8`` formatter for better error messages.
 
@@ -11,7 +9,7 @@ That's how all ``flake8`` formatters work:
     graph LR
         F2[start]  --> F3[after_init]
         F3         --> F4[start]
-        F4         --> F5[beggining]
+        F4         --> F5[beginning]
         F5         --> F6[handle]
         F6         --> F7[format]
         F6	       --> F8[show_source]
@@ -83,7 +81,7 @@ class WemakeFormatter(BaseFormatter):  # noqa: WPS214
         super().handle(error)
         self._error_count += 1
 
-    def format(self, error: Violation) -> str:  # noqa: A003
+    def format(self, error: Violation) -> str:  # noqa: WPS125
         """Called to format each individual :term:`violation`."""
         return '{newline}  {row_col:<8} {code:<5} {text}'.format(
             newline=self.newline if self._should_show_source(error) else '',
@@ -106,9 +104,9 @@ class WemakeFormatter(BaseFormatter):  # noqa: WPS214
             self._formatter,
         )
 
-        return '  {code}  {pointer}^'.format(
+        return '  {code}  {spacing}^'.format(
             code=code,
-            pointer=' ' * (error.column_number - 1 - adjust),
+            spacing=' ' * (error.column_number - 1 - adjust),
         )
 
     def show_statistics(self, statistics: Statistics) -> None:  # noqa: WPS210
@@ -123,21 +121,12 @@ class WemakeFormatter(BaseFormatter):  # noqa: WPS214
             all_errors += count
             error_by_file = _count_per_filename(statistics, error_code)
 
-            self._write(
-                '{newline}{error_code}: {message}'.format(
-                    newline=self.newline,
-                    error_code=_bold(error_code),
-                    message=statistic.message,
-                ),
+            self._print_violation_per_file(
+                statistic,
+                error_code,
+                count,
+                error_by_file,
             )
-            for filename in error_by_file:
-                self._write(
-                    '  {error_count:<5} {filename}'.format(
-                        error_count=error_by_file[filename],
-                        filename=filename,
-                    ),
-                )
-            self._write(_underline('Total: {0}'.format(count)))
 
         self._write(self.newline)
         self._write(_underline(_bold('All errors: {0}'.format(all_errors))))
@@ -157,6 +146,29 @@ class WemakeFormatter(BaseFormatter):  # noqa: WPS214
                 newline=self.newline,
             ),
         )
+
+    def _print_violation_per_file(
+        self,
+        statistic: Statistics,
+        error_code: str,
+        count: int,
+        error_by_file: DefaultDict[str, int],
+    ):
+        self._write(
+            '{newline}{error_code}: {message}'.format(
+                newline=self.newline,
+                error_code=_bold(error_code),
+                message=statistic.message,
+            ),
+        )
+        for filename, error_count in error_by_file.items():
+            self._write(
+                '  {error_count:<5} {filename}'.format(
+                    error_count=error_count,
+                    filename=filename,
+                ),
+            )
+        self._write(_underline('Total: {0}'.format(count)))
 
     def _should_show_source(self, error: Violation) -> bool:
         return self.options.show_source and error.physical_line is not None

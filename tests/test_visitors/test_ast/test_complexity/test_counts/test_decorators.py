@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
+from wemake_python_styleguide.violations.complexity import (
+    TooManyDecoratorsViolation,
+)
 from wemake_python_styleguide.visitors.ast.complexity.counts import (
     ModuleMembersVisitor,
-    TooManyDecoratorsViolation,
 )
 
 function_with_decorators = """
@@ -82,4 +82,4 @@ def test_decorators_incorrect(
     visitor.run()
 
     assert_errors(visitor, [TooManyDecoratorsViolation])
-    assert_error_text(visitor, '3')
+    assert_error_text(visitor, '3', option_values.max_decorators)

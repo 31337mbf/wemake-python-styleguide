@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import importlib
 import inspect
 from importlib.machinery import SourceFileLoader
@@ -24,7 +22,7 @@ def _is_visitor_class(cls) -> bool:
         BaseTokenVisitor,
         BaseVisitor,
     }
-    if not inspect.isclass(cls) or cls.__qualname__.startswith('_'):
+    if not inspect.isclass(cls):
         return False
 
     return issubclass(cls, BaseVisitor) and cls not in base_classes

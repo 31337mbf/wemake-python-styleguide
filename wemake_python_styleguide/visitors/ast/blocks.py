@@ -1,40 +1,18 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from collections import defaultdict
-from typing import (
-    Callable,
-    ClassVar,
-    DefaultDict,
-    List,
-    Set,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Callable, DefaultDict, List, Set, Tuple, Union, cast
 
 from typing_extensions import final
 
-from wemake_python_styleguide.compat.aliases import ForNodes, WithNodes
-from wemake_python_styleguide.logic.naming.name_nodes import (
-    flat_variable_names,
-)
+from wemake_python_styleguide.compat.types import AnyAssignWithWalrus
+from wemake_python_styleguide.logic.naming.name_nodes import flat_variable_names
 from wemake_python_styleguide.logic.nodes import get_context, get_parent
-from wemake_python_styleguide.logic.scopes import (
-    BlockScope,
-    OuterScope,
-    extract_names,
-    is_function_overload,
-    is_property_setter,
-    is_same_value_reuse,
-)
+from wemake_python_styleguide.logic.scopes import defs, predicates
 from wemake_python_styleguide.logic.walk import is_contained_by
 from wemake_python_styleguide.types import (
-    AnyAssign,
     AnyFor,
     AnyFunctionDef,
     AnyImport,
-    AnyNodes,
     AnyWith,
 )
 from wemake_python_styleguide.violations.best_practices import (
@@ -69,6 +47,7 @@ _NamePredicate = Callable[[ast.AST], bool]
 @decorators.alias('visit_locals', (
     'visit_Assign',
     'visit_AnnAssign',
+    'visit_NamedExpr',
     'visit_arg',
 ))
 class BlockVariableVisitor(base.BaseNodeVisitor):
@@ -90,18 +69,23 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
     """
 
     _naming_predicates: Tuple[_NamePredicate, ...] = (
-        is_function_overload,
-        is_property_setter,
+        predicates.is_property_setter,
+        predicates.is_function_overload,
+        predicates.is_no_value_annotation,
     )
 
     _scope_predicates: Tuple[_ScopePredicate, ...] = (
-        is_same_value_reuse,
-        is_property_setter,
+        lambda node, names: predicates.is_property_setter(node),
+        predicates.is_same_value_reuse,
+        predicates.is_same_try_except_cases,
     )
 
     # Blocks:
 
-    def visit_named_nodes(self, node: AnyFunctionDef) -> None:
+    def visit_named_nodes(
+        self,
+        node: Union[AnyFunctionDef, ast.ClassDef, ast.ExceptHandler],
+    ) -> None:
         """
         Visits block nodes that have ``.name`` property.
 
@@ -122,7 +106,7 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
             BlockAndLocalOverlapViolation
 
         """
-        names = extract_names(node.target)
+        names = defs.extract_names(node.target)
         self._scope(node, names, is_local=False)
         self._outer_scope(node, names)
         self.generic_visit(node)
@@ -151,14 +135,14 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
         """
         if node.optional_vars:
             parent = cast(AnyWith, get_parent(node))
-            names = extract_names(node.optional_vars)
+            names = defs.extract_names(node.optional_vars)
             self._scope(parent, names, is_local=False)
             self._outer_scope(parent, names)
         self.generic_visit(node)
 
     # Locals:
 
-    def visit_locals(self, node: Union[AnyAssign, ast.arg]) -> None:
+    def visit_locals(self, node: Union[AnyAssignWithWalrus, ast.arg]) -> None:
         """
         Visits local variable definitions and function arguments.
 
@@ -184,7 +168,7 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
         *,
         is_local: bool,
     ) -> None:
-        scope = BlockScope(node)
+        scope = defs.BlockScope(node)
         shadow = scope.shadowing(names, is_local=is_local)
 
         ignored_scope = any(
@@ -205,7 +189,7 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
             scope.add_to_scope(names, is_local=is_local)
 
     def _outer_scope(self, node: ast.AST, names: Set[str]) -> None:
-        scope = OuterScope(node)
+        scope = defs.OuterScope(node)
         shadow = scope.shadowing(names)
 
         if shadow:
@@ -224,12 +208,6 @@ class BlockVariableVisitor(base.BaseNodeVisitor):
 class AfterBlockVariablesVisitor(base.BaseNodeVisitor):
     """Visitor that ensures that block variables are not used after block."""
 
-    _block_nodes: ClassVar[AnyNodes] = (
-        ast.ExceptHandler,
-        *ForNodes,
-        *WithNodes,
-    )
-
     def __init__(self, *args, **kwargs) -> None:
         """We need to store complex data about variable usages."""
         super().__init__(*args, **kwargs)
@@ -237,15 +215,11 @@ class AfterBlockVariablesVisitor(base.BaseNodeVisitor):
             lambda: defaultdict(list),
         )
 
-    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
-        """Visit exception names definition."""
-        if node.name:
-            self._add_to_scope(node, {node.name})
-        self.generic_visit(node)
+    # Blocks:
 
     def visit_any_for(self, node: AnyFor) -> None:
         """Visit loops."""
-        self._add_to_scope(node, extract_names(node.target))
+        self._add_to_scope(node, defs.extract_names(node.target))
         self.generic_visit(node)
 
     def visit_withitem(self, node: ast.withitem) -> None:
@@ -253,7 +227,7 @@ class AfterBlockVariablesVisitor(base.BaseNodeVisitor):
         if node.optional_vars:
             self._add_to_scope(
                 cast(AnyWith, get_parent(node)),
-                extract_names(node.optional_vars),
+                defs.extract_names(node.optional_vars),
             )
         self.generic_visit(node)
 

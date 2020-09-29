@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 These checks find flaws in your application design.
 
@@ -53,6 +51,12 @@ Summary
    TooLongCompareViolation
    TooLongTryBodyViolation
    TooManyPublicAttributesViolation
+   CognitiveComplexityViolation
+   CognitiveModuleComplexityViolation
+   TooLongCallChainViolation
+   TooComplexAnnotationViolation
+   TooManyImportedModuleMembersViolation
+   TooLongTupleUnpackViolation
 
 
 Module complexity
@@ -88,6 +92,12 @@ Structure complexity
 .. autoclass:: TooLongCompareViolation
 .. autoclass:: TooLongTryBodyViolation
 .. autoclass:: TooManyPublicAttributesViolation
+.. autoclass:: CognitiveComplexityViolation
+.. autoclass:: CognitiveModuleComplexityViolation
+.. autoclass:: TooLongCallChainViolation
+.. autoclass:: TooComplexAnnotationViolation
+.. autoclass:: TooManyImportedModuleMembersViolation
+.. autoclass:: TooLongTupleUnpackViolation
 
 """
 
@@ -255,12 +265,25 @@ class OverusedExpressionViolation(ASTViolation):
     """
     Forbids to have overused expressions in a module, function or method.
 
+    What do we call an "overused expression"? When you use any expression
+    (like ``user_dict['age']`` for example) inside your code,
+    you always have to track that you are not using it "too much".
+    Because if that expression is everywhere inside your code,
+    it is a sign of a problem. It means that you are missing an abstraction.
+
+    We check overused expression on two levels:
+
+    - per each function
+    - per all module
+
+    Related to :class:`~TooManyExpressionsViolation`.
+
     Reasoning:
         Overusing expression lead to losing the parts that can and should
-        be refactored into methods and properties of objects.
+        be refactored into variables, methods, and properties of objects.
 
     Solution:
-        Refactor expressions to be attribute, method, or a new variable.
+        Refactor expressions to be an attribute, a method, or a new variable.
 
     Configuration:
         This rule is configurable with ``--max-module-expressions``.
@@ -272,6 +295,7 @@ class OverusedExpressionViolation(ASTViolation):
         :str:`wemake_python_styleguide.options.defaults.MAX_FUNCTION_EXPRESSIONS`
 
     .. versionadded:: 0.12.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -386,7 +410,14 @@ class TooManyReturnsViolation(ASTViolation):
 @final
 class TooManyExpressionsViolation(ASTViolation):
     """
-    Forbids putting too many expressions in a unit of code.
+    Forbids putting too many expressions in a single function.
+
+    This rule is quite similar to "max lines" in a function,
+    but is much nicer. Because we don't count lines,
+    we count real code entities. This way adding just several extra empty
+    lines for readability will never trigger this violation.
+
+    Related to :class:`~OverusedExpressionViolation`.
 
     Reasoning:
         When there are too many expressions it means that this specific
@@ -401,6 +432,9 @@ class TooManyExpressionsViolation(ASTViolation):
         :str:`wemake_python_styleguide.options.defaults.MAX_EXPRESSIONS`
 
     .. versionadded:: 0.1.0
+
+    See also:
+        https://en.wikipedia.org/wiki/Expression_(computer_science)
 
     """
 
@@ -552,7 +586,7 @@ class TooManyAwaitsViolation(ASTViolation):
 @final
 class TooManyAssertsViolation(ASTViolation):
     """
-    Forbids placing too many ``asseert`` statements into a function.
+    Forbids placing too many ``assert`` statements into a function.
 
     Reasoning:
         When there are too many ``assert`` keywords,
@@ -700,6 +734,9 @@ class TooManyConditionsViolation(ASTViolation):
     """
     Forbids to have conditions with too many logical operators.
 
+    We use :str:`wemake_python_styleguide.constants.MAX_CONDITIONS`
+    as a default value.
+
     Reasoning:
         When reading through the complex conditions you will fail
         to understand all the possible branches. And you will end up putting
@@ -725,6 +762,9 @@ class TooManyConditionsViolation(ASTViolation):
 class TooManyElifsViolation(ASTViolation):
     """
     Forbids to use many ``elif`` branches.
+
+    We use :str:`wemake_python_styleguide.constants.MAX_ELIFS`
+    as a default value.
 
     Reasoning:
         This rule is specifically important because of many ``elif``
@@ -783,6 +823,9 @@ class TooManyExceptCasesViolation(ASTViolation):
     """
     Forbids to have too many ``except`` cases in a single ``try`` clause.
 
+    We use :str:`wemake_python_styleguide.constants.MAX_EXCEPT_CASES`
+    as a default value.
+
     Reasoning:
         Handling too many exceptions in a single place
         is a good indicator of a bad design.
@@ -798,7 +841,7 @@ class TooManyExceptCasesViolation(ASTViolation):
 
     """
 
-    error_template = 'Found too many `except` cases'
+    error_template = 'Found too many `except` cases: {0}'
     code = 225
 
 
@@ -894,6 +937,9 @@ class TooLongTryBodyViolation(ASTViolation):
         Default:
         :str:`wemake_python_styleguide.options.defaults.MAX_TRY_BODY_LENGTH`
 
+    See also:
+        https://adamj.eu/tech/2019/10/02/limit-your-try-clauses-in-python/
+
     .. versionadded:: 0.12.0
 
     """
@@ -905,13 +951,14 @@ class TooLongTryBodyViolation(ASTViolation):
 @final
 class TooManyPublicAttributesViolation(ASTViolation):
     """
-    Forbids to have ``try`` blocks with too long bodies.
+    Forbids to have instances with too many public attributes.
 
     We only check static definitions in a form of ``self.public = ...``.
     We do not count parent attributes.
     We do not count properties.
     We do not count annotations.
     We do not count class attributes.
+    We do not count duplicates.
 
     Reasoning:
         Having too many public instance attributes means
@@ -922,7 +969,7 @@ class TooManyPublicAttributesViolation(ASTViolation):
     Solution:
         Make some attributes protected.
         Split this class into several ones.
-        If class is a Data Transder Object, then use ``@dataclass`` decorator.
+        If class is a Data Transfer Object, then use ``@dataclass`` decorator.
 
     Configuration:
         This rule is configurable with ``--max-attributes``.
@@ -936,5 +983,194 @@ class TooManyPublicAttributesViolation(ASTViolation):
 
     """
 
-    error_template = 'Found too many public instance attributes'
+    error_template = 'Found too many public instance attributes: {0}'
     code = 230
+
+
+@final
+class CognitiveComplexityViolation(ASTViolation):
+    """
+    Forbids to have functions with too high cognitive complexity.
+
+    Reasoning:
+        People are not great at reading and iterpretating code in their heads.
+        That's why code with a lot of nested loops,
+        conditions, exceptions handlers,
+        and context managers is hard to read and understand.
+
+    Solution:
+        Rewrite your code to be simplier.
+        Use flat structures and conditions, remove nested loops.
+
+    Configuration:
+        This rule is configurable with ``--max-cognitive-score``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_COGNITIVE_SCORE`
+
+    See also:
+        https://en.wikipedia.org/wiki/Cognitive_complexity
+        https://pypi.org/project/cognitive-complexity/
+        https://github.com/Melevir/flake8-cognitive-complexity
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found too high function cognitive complexity: {0}'
+    code = 231
+
+
+@final
+class CognitiveModuleComplexityViolation(SimpleViolation):
+    """
+    Forbids to have modules with too high average cognitive complexity.
+
+    Reasoning:
+        Modules with lots of functions might hide cognitive complexity
+        inside many small and relatevely simple functions.
+
+    Solution:
+        Rewrite your code to be simplier.
+        Or use several modules.
+
+    Configuration:
+        This rule is configurable with ``--max-cognitive-average``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_COGNITIVE_AVERAGE`
+
+    See also:
+        https://en.wikipedia.org/wiki/Cognitive_complexity
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found too high module cognitive complexity: {0}'
+    code = 232
+
+
+@final
+class TooLongCallChainViolation(ASTViolation):
+    """
+    Forbids too long call chains.
+
+    Reasoning:
+        Too long call chains are overcomplicated and
+        indicators of bad API design.
+
+    Solution:
+        Split the expression into variables, functions or classes.
+        Refactor the API to allow higher-level access to functions.
+
+    Configuration:
+        This rule is configurable with ``--max-call-level``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_CALL_LEVEL`
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found too long call chain length: {0}'
+    code = 233
+
+
+@final
+class TooComplexAnnotationViolation(ASTViolation):
+    """
+    Forbids too complex annotations.
+
+    Annotation complexity is maximum annotation nesting level.
+    Example: ``List[int]`` has complexity of 2
+    and ``Tuple[List[Optional[str]], int]`` has complexity of 4.
+
+    Reasoning:
+        Too complex annotations make your types unreadable.
+        And make developers afraid of types.
+
+    Solution:
+        Create type aliases. And use them a lot!
+
+    Configuration:
+        This rule is configurable with ``--max-annotation-complexity``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_ANN_COMPLEXITY`
+
+    See also:
+        https://mypy.readthedocs.io/en/stable/kinds_of_types.html#type-aliases
+        https://github.com/best-doctor/flake8-annotations-complexity
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found too complex annotation: {0}'
+    code = 234
+
+
+@final
+class TooManyImportedModuleMembersViolation(ASTViolation):
+    """
+    Forbids ``from ... import ...`` with too many imported names.
+
+    Reasoning:
+        Importing too many names from one import is easy way to cause
+        violation ``WPS203`` - too many imported names.
+
+    Solution:
+        Refactor the imports to import a common namespace. Something like
+        ``from package import module`` and then
+        use it like ``module.function()``.
+
+    Example::
+
+        # Correct:
+        import module  # 1 imported name
+
+        # Wrong:
+        from module import func1, func2, ..., funcN  # N imported names
+
+    Configuration:
+        This rule is configurable with ``--max-import-from-members``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_IMPORT_FROM_MEMBERS`
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found too many imported names from a module: {0}'
+    code = 235
+
+
+@final
+class TooLongTupleUnpackViolation(ASTViolation):
+    """
+    Forbids using too many variables to unpack a tuple.
+
+    Reasoning:
+        The order and meaning are hard to remember.
+
+    Solution:
+        If you have more than 2 values in a tuple, consider using
+        ``typing.NamedTuple`` or a dataclass instead.
+
+    Example::
+
+        # Correct:
+        result = foo()
+
+        # Wrong:
+        a, b, c, d, e = foo()
+
+    Configuration:
+        This rule is configurable with ``--max-tuple-unpack-length``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.MAX_TUPLE_UNPACK_LENGTH`
+
+    .. versionadded:: 0.15.0
+
+    """
+
+    error_template = 'Found too many variables used to unpack a tuple: {0}'
+    code = 236

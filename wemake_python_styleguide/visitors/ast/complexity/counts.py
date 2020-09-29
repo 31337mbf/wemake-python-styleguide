@@ -1,33 +1,19 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from collections import defaultdict
-from typing import ClassVar, DefaultDict, List, Union
+from typing import DefaultDict, List, Union
 
 from typing_extensions import final
 
-from wemake_python_styleguide.constants import MAX_LEN_YIELD_TUPLE
-from wemake_python_styleguide.logic.functions import is_method
+from wemake_python_styleguide import constants
 from wemake_python_styleguide.logic.nodes import get_parent
-from wemake_python_styleguide.types import AnyFunctionDef, AnyImport
-from wemake_python_styleguide.violations.complexity import (
-    TooLongCompareViolation,
-    TooLongTryBodyViolation,
-    TooLongYieldTupleViolation,
-    TooManyConditionsViolation,
-    TooManyDecoratorsViolation,
-    TooManyElifsViolation,
-    TooManyExceptCasesViolation,
-    TooManyImportedNamesViolation,
-    TooManyImportsViolation,
-    TooManyMethodsViolation,
-    TooManyModuleMembersViolation,
-)
+from wemake_python_styleguide.logic.tree.functions import is_method
+from wemake_python_styleguide.types import AnyFunctionDef
+from wemake_python_styleguide.violations import complexity
 from wemake_python_styleguide.visitors.base import BaseNodeVisitor
 from wemake_python_styleguide.visitors.decorators import alias
 
-ConditionNodes = Union[ast.If, ast.While, ast.IfExp]
-ModuleMembers = Union[AnyFunctionDef, ast.ClassDef]
+_ConditionNodes = Union[ast.If, ast.While, ast.IfExp]
+_ModuleMembers = Union[AnyFunctionDef, ast.ClassDef]
 
 
 @final
@@ -44,9 +30,9 @@ class ModuleMembersVisitor(BaseNodeVisitor):
         super().__init__(*args, **kwargs)
         self._public_items_count = 0
 
-    def visit_module_members(self, node: ModuleMembers) -> None:
+    def visit_module_members(self, node: _ModuleMembers) -> None:
         """
-        Counts the number of ModuleMembers in a single module.
+        Counts the number of _ModuleMembers in a single module.
 
         Raises:
             TooManyModuleMembersViolation
@@ -56,124 +42,37 @@ class ModuleMembersVisitor(BaseNodeVisitor):
         self._check_members_count(node)
         self.generic_visit(node)
 
-    def _check_members_count(self, node: ModuleMembers) -> None:
+    def _check_members_count(self, node: _ModuleMembers) -> None:
         """This method increases the number of module members."""
         is_real_method = is_method(getattr(node, 'function_type', None))
 
         if isinstance(get_parent(node), ast.Module) and not is_real_method:
             self._public_items_count += 1
 
-    def _check_decorators_count(self, node: ModuleMembers) -> None:
+    def _check_decorators_count(self, node: _ModuleMembers) -> None:
         number_of_decorators = len(node.decorator_list)
         if number_of_decorators > self.options.max_decorators:
             self.add_violation(
-                TooManyDecoratorsViolation(
-                    node, text=str(number_of_decorators),
+                complexity.TooManyDecoratorsViolation(
+                    node,
+                    text=str(number_of_decorators),
+                    baseline=self.options.max_decorators,
                 ),
             )
 
     def _post_visit(self) -> None:
         if self._public_items_count > self.options.max_module_members:
             self.add_violation(
-                TooManyModuleMembersViolation(
+                complexity.TooManyModuleMembersViolation(
                     text=str(self._public_items_count),
+                    baseline=self.options.max_module_members,
                 ),
             )
 
 
 @final
-@alias('visit_any_import', (
-    'visit_ImportFrom',
-    'visit_Import',
-))
-class ImportMembersVisitor(BaseNodeVisitor):
-    """Counts imports in a module."""
-
-    def __init__(self, *args, **kwargs) -> None:
-        """Creates a counter for tracked metrics."""
-        super().__init__(*args, **kwargs)
-        self._imports_count = 0
-        self._imported_names_count = 0
-
-    def visit_any_import(self, node: AnyImport) -> None:
-        """
-        Counts the number of ``import`` and ``from ... import ...``.
-
-        Raises:
-            TooManyImportsViolation
-            TooManyImportedNamesViolation
-
-        """
-        self._imports_count += 1
-        self._imported_names_count += len(node.names)
-        self.generic_visit(node)
-
-    def _check_imports_count(self) -> None:
-        if self._imports_count > self.options.max_imports:
-            self.add_violation(
-                TooManyImportsViolation(text=str(self._imports_count)),
-            )
-
-    def _check_imported_names_count(self) -> None:
-        if self._imported_names_count > self.options.max_imported_names:
-            violation = TooManyImportedNamesViolation(
-                text=str(self._imported_names_count),
-            )
-            self.add_violation(
-                violation,
-            )
-
-    def _post_visit(self) -> None:
-        self._check_imports_count()
-        self._check_imported_names_count()
-
-
-@final
-@alias('visit_any_function', (
-    'visit_FunctionDef',
-    'visit_AsyncFunctionDef',
-))
-class MethodMembersVisitor(BaseNodeVisitor):
-    """Counts methods in a single class."""
-
-    def __init__(self, *args, **kwargs) -> None:
-        """Creates a counter for tracked methods in different classes."""
-        super().__init__(*args, **kwargs)
-        self._methods: DefaultDict[ast.ClassDef, int] = defaultdict(int)
-
-    def visit_any_function(self, node: AnyFunctionDef) -> None:
-        """
-        Counts the number of methods in a single class.
-
-        Raises:
-            TooManyMethodsViolation
-
-        """
-        self._check_method(node)
-        self.generic_visit(node)
-
-    def _check_method(self, node: AnyFunctionDef) -> None:
-        parent = get_parent(node)
-        if isinstance(parent, ast.ClassDef):
-            self._methods[parent] += 1
-
-    def _post_visit(self) -> None:
-        for node, count in self._methods.items():
-            if count > self.options.max_methods:
-                self.add_violation(
-                    TooManyMethodsViolation(node, text=str(count)),
-                )
-
-
-@final
 class ConditionsVisitor(BaseNodeVisitor):
     """Checks booleans for condition counts."""
-
-    #: Maximum number of conditions in a single ``if`` or ``while`` statement.
-    _max_conditions: ClassVar[int] = 4
-
-    #: Maximum number of compare nodes in a single expression.
-    _max_compares: ClassVar[int] = 2
 
     def visit_BoolOp(self, node: ast.BoolOp) -> None:
         """
@@ -208,9 +107,13 @@ class ConditionsVisitor(BaseNodeVisitor):
 
     def _check_conditions(self, node: ast.BoolOp) -> None:
         conditions_count = self._count_conditions(node)
-        if conditions_count > self._max_conditions:
+        if conditions_count > constants.MAX_CONDITIONS:
             self.add_violation(
-                TooManyConditionsViolation(node, text=str(conditions_count)),
+                complexity.TooManyConditionsViolation(
+                    node,
+                    text=str(conditions_count),
+                    baseline=constants.MAX_CONDITIONS,
+                ),
             )
 
     def _check_compares(self, node: ast.Compare) -> None:
@@ -218,22 +121,23 @@ class ConditionsVisitor(BaseNodeVisitor):
         is_all_notequals = all(isinstance(op, ast.NotEq) for op in node.ops)
         can_be_longer = is_all_notequals or is_all_equals
 
-        treshold = self._max_compares
+        threshold = constants.MAX_COMPARES
         if can_be_longer:
-            treshold += 1
+            threshold += 1
 
-        if len(node.ops) > treshold:
+        if len(node.ops) > threshold:
             self.add_violation(
-                TooLongCompareViolation(node, text=str(len(node.ops))),
+                complexity.TooLongCompareViolation(
+                    node,
+                    text=str(len(node.ops)),
+                    baseline=threshold,
+                ),
             )
 
 
 @final
 class ElifVisitor(BaseNodeVisitor):
     """Checks the number of ``elif`` cases inside conditions."""
-
-    #: Maximum number of `elif` blocks in a single `if` condition:
-    _max_elifs: ClassVar[int] = 3
 
     def __init__(self, *args, **kwargs) -> None:
         """Creates internal ``elif`` counter."""
@@ -257,7 +161,6 @@ class ElifVisitor(BaseNodeVisitor):
         for root, children in self._if_children.items():
             if node in children:
                 return root
-
         return node
 
     def _update_if_child(self, root: ast.If, node: ast.If) -> None:
@@ -277,18 +180,19 @@ class ElifVisitor(BaseNodeVisitor):
     def _post_visit(self):
         for root, children in self._if_children.items():
             real_children_length = len(set(children))
-            if real_children_length > self._max_elifs:
+            if real_children_length > constants.MAX_ELIFS:
                 self.add_violation(
-                    TooManyElifsViolation(root, text=str(real_children_length)),
+                    complexity.TooManyElifsViolation(
+                        root,
+                        text=str(real_children_length),
+                        baseline=constants.MAX_ELIFS,
+                    ),
                 )
 
 
 @final
 class TryExceptVisitor(BaseNodeVisitor):
     """Visits all try/except nodes to ensure that they are not too complex."""
-
-    #: Maximum number of ``except`` cases in a single ``try`` clause.
-    _max_except_cases: ClassVar[int] = 3
 
     def visit_Try(self, node: ast.Try) -> None:
         """
@@ -304,13 +208,23 @@ class TryExceptVisitor(BaseNodeVisitor):
         self.generic_visit(node)
 
     def _check_except_count(self, node: ast.Try) -> None:
-        if len(node.handlers) > self._max_except_cases:
-            self.add_violation(TooManyExceptCasesViolation(node))
+        if len(node.handlers) > constants.MAX_EXCEPT_CASES:
+            self.add_violation(
+                complexity.TooManyExceptCasesViolation(
+                    node,
+                    text=str(len(node.handlers)),
+                    baseline=constants.MAX_EXCEPT_CASES,
+                ),
+            )
 
     def _check_try_body_length(self, node: ast.Try) -> None:
         if len(node.body) > self.options.max_try_body_length:
             self.add_violation(
-                TooLongTryBodyViolation(node, text=str(len(node.body))),
+                complexity.TooLongTryBodyViolation(
+                    node,
+                    text=str(len(node.body)),
+                    baseline=self.options.max_try_body_length,
+                ),
             )
 
 
@@ -331,10 +245,34 @@ class YieldTupleVisitor(BaseNodeVisitor):
 
     def _check_yield_values(self, node: ast.Yield) -> None:
         if isinstance(node.value, ast.Tuple):
-            yield_list = [tup_item for tup_item in node.value.elts]
-            if len(yield_list) > MAX_LEN_YIELD_TUPLE:
+            if len(node.value.elts) > constants.MAX_LEN_YIELD_TUPLE:
                 self.add_violation(
-                    TooLongYieldTupleViolation(
-                        node, text=str(len(yield_list)),
+                    complexity.TooLongYieldTupleViolation(
+                        node,
+                        text=str(len(node.value.elts)),
+                        baseline=constants.MAX_LEN_YIELD_TUPLE,
+                    ),
+                )
+
+
+@final
+class TupleUnpackVisitor(BaseNodeVisitor):
+    """Finds statements with too many variables receiving an unpacked tuple."""
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        """
+        Finds statements using too many variables to receive an unpacked tuple.
+
+        Raises:
+            TooLongTupleUnpackViolation
+
+        """
+        if isinstance(node.targets[0], ast.Tuple):
+            if len(node.targets[0].elts) > self.options.max_tuple_unpack_length:
+                self.add_violation(
+                    complexity.TooLongTupleUnpackViolation(
+                        node,
+                        text=str(len(node.targets[0].elts)),
+                        baseline=self.options.max_tuple_unpack_length,
                     ),
                 )

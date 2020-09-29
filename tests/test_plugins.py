@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 These test ensures that each plugin is enabled and working.
 
@@ -14,29 +12,21 @@ import subprocess
 
 PLUGINS = (
     'B002',  # flake8-bugbear
-    'C101',  # flake8-coding
-    'A001',  # flake8-builtins
     'C400',  # flake8-comprehensions
     'C819',  # flake8-commas
     'D103',  # flake8-docstring
     'E225',  # pycodestyle
     'E800',  # flake8-eradicate
-    'F401',  # flake8
-    'G001',  # flake8-logging-format
+    'F401',  # pyflakes
     'I001',  # flake8-isort
     'N400',  # flake8-broken-line
     'N802',  # pep8-naming
     'P101',  # flake8-string-format
-    'Q000',  # flake8-quotes
     'Q003',  # flake8-quotes
-    'R701',  # radon
-    'S001',  # flake8-pep3101
     'S101',  # flake8-bandit
-    'T001',  # flake8-print
     'T100',  # flake8-debugger
-    'TAE002',  # flake8-annotations-complexity
-    'RST299',  # flake8-rst-docstrings
-    'EXE003',  # flake8-executable
+    'RST215',  # flake8-rst-docstrings
+    'DAR101',  # darglint
 )
 
 
@@ -53,8 +43,6 @@ def test_external_plugins(absolute_path):
             'flake8',
             '--disable-noqa',
             '--isolated',
-            '--radon-max-cc',  # without this line radon will not trigger
-            '1',
             '--enable-extensions',
             'G',
             filename,
@@ -89,8 +77,6 @@ def test_external_plugins_diff(absolute_path):
             'flake8',
             '--disable-noqa',
             '--isolated',
-            '--radon-max-cc',
-            '1',
             '--enable-extensions',
             'G',
             '--diff',  # is required to test diffs! ;)

@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
-from wemake_python_styleguide.visitors.ast.complexity.counts import (
-    ElifVisitor,
-    TooManyElifsViolation,
-)
+from wemake_python_styleguide.violations.complexity import TooManyElifsViolation
+from wemake_python_styleguide.visitors.ast.complexity.counts import ElifVisitor
 
 module_with_one_elif = """
 if 1 > 2:
@@ -212,4 +208,4 @@ def test_elif_incorrect_count(
     visitor.run()
 
     assert_errors(visitor, [TooManyElifsViolation])
-    assert_error_text(visitor, '4')
+    assert_error_text(visitor, '4', baseline=3)

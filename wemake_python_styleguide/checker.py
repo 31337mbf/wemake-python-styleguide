@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Entry point to the app.
 
@@ -54,6 +52,7 @@ from wemake_python_styleguide.presets.types import file_tokens as tokens_preset
 from wemake_python_styleguide.presets.types import filename as filename_preset
 from wemake_python_styleguide.presets.types import tree as tree_preset
 from wemake_python_styleguide.transformations.ast_tree import transform
+from wemake_python_styleguide.violations import system
 from wemake_python_styleguide.visitors import base
 
 VisitorClass = Type[base.BaseVisitor]
@@ -109,11 +108,7 @@ class Checker(object):
         based on its parameters. This one is executed once per module.
 
         Arguments:
-            tree: ``ast`` parsed by ``flake8``. Differs from ``ast.parse``
-                since it is mutated by multiple ``flake8`` plugins.
-                Why mutated? Since it is really expensive
-                to copy all ``ast`` information in terms of memory.
-
+            tree: ``ast`` tree parsed by ``flake8``.
             file_tokens: ``tokenize.tokenize`` parsed file tokens.
             filename: module file name, might be empty if piping is used.
 
@@ -158,10 +153,13 @@ class Checker(object):
             try:
                 visitor.run()
             except Exception:
-                # In case we fail misserably, we want users to see at
+                # In case we fail miserably, we want users to see at
                 # least something! Full stack trace
                 # and some rules that still work.
-                print(traceback.format_exc())  # noqa: T001
+                print(traceback.format_exc())  # noqa: T001, WPS421
+                visitor.add_violation(system.InternalErrorViolation())
 
-            for error in visitor.violations:
-                yield (*error.node_items(), type(self))
+            yield from (
+                (*error.node_items(), type(self))
+                for error in visitor.violations
+            )

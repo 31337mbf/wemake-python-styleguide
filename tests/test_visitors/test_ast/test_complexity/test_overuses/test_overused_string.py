@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.complexity import (
@@ -82,6 +80,21 @@ third: {0}
 fourth: {0}
 """
 
+# See:
+# https://github.com/wemake-services/wemake-python-styleguide/issues/1127
+regression1127 = """
+first: List[{0}]
+
+class Some(object):
+    field: {0}
+
+    def method(self, arg: {0}):
+        ...
+
+def function() -> Dict[int, {0}]:
+    ...
+"""
+
 
 @pytest.mark.parametrize('strings', [
     string_actions,
@@ -91,6 +104,7 @@ fourth: {0}
     string_method_type_annotations1,
     string_method_type_annotations2,
     string_variable_type_annotations,
+    regression1127,
 ])
 @pytest.mark.parametrize('string_value', [
     '"same_string"',
@@ -123,22 +137,32 @@ def test_string_overuse_settings(
     "''",
     '""',
 ])
+@pytest.mark.parametrize('prefix', [
+    'b',
+    'u',
+    '',
+])
 def test_string_overuse(
     assert_errors,
     assert_error_text,
     parse_ast_tree,
     default_options,
     strings,
+    prefix,
     string_value,
 ):
     """Ensures that over-used strings raise violations."""
-    tree = parse_ast_tree(strings.format(string_value))
+    tree = parse_ast_tree(strings.format(prefix + string_value))
 
     visitor = StringOveruseVisitor(default_options, tree=tree)
     visitor.run()
 
     assert_errors(visitor, [OverusedStringViolation])
-    assert_error_text(visitor, string_value.replace('"', '') or "''")
+    assert_error_text(
+        visitor,
+        string_value.replace('"', '') or "''",
+        default_options.max_string_usages,
+    )
 
 
 @pytest.mark.parametrize('strings', [
@@ -148,10 +172,12 @@ def test_string_overuse(
     string_method_type_annotations1,
     string_method_type_annotations2,
     string_variable_type_annotations,
+    regression1127,
 ])
 @pytest.mark.parametrize('string_value', [
     '"GenericType[int, str]"',
     '"int"',
+    'List["int"]',
 ])
 def test_string_type_annotations(
     assert_errors,

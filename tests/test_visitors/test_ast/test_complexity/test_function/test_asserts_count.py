@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.complexity import (
@@ -65,4 +63,4 @@ def test_asserts_wrong_count(
     visitor.run()
 
     assert_errors(visitor, [TooManyAssertsViolation])
-    assert_error_text(visitor, '2')
+    assert_error_text(visitor, '2', option_values.max_asserts)

@@ -16,7 +16,7 @@ Installation
 We also recommend to use `poetry <https://github.com/sdispater/poetry>`_
 instead of a default ``pip``.
 
-You might want to also intsall optional tools
+You might want to also install optional tools
 that pairs nicely with ``wemake-python-styleguide``:
 
 - :ref:`flakehell` for easy integration into a **legacy** codebase
@@ -43,11 +43,13 @@ and `usage examples <http://flake8.pycqa.org/en/latest/user/invocation.html>`_.
 Golden rule is to run your linter on each commit locally and inside the CI.
 And to fail the build if there are any style violations.
 
-Check out how we do it in our ``django`` and ``gitlab-ci`` template:
-https://github.com/wemake-services/wemake-django-template
+Check out how we do it in our different templates:
+
+- ``django`` and ``gitlab-ci``: https://github.com/wemake-services/wemake-django-template
+- ``python`` package and ``travis``: https://github.com/wemake-services/wemake-python-package
 
 .. rubric:: Further reading
 
 - :ref:`Configuring and ignoring violations <configuration>`
-- :ref:`Intoducing this linter to a legacy codebase <flakehell>`
+- :ref:`Introducing this linter to a legacy codebase <flakehell>`
 - :ref:`Sharing configuration across multiple projects <nitpick>`

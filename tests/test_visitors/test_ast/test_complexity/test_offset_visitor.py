@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.visitors.ast.complexity.offset import (
@@ -168,7 +166,7 @@ def test_nested_offset_error_text(
     visitor.run()
 
     assert_errors(visitor, [TooDeepNestingViolation])
-    assert_error_text(visitor, '8')
+    assert_error_text(visitor, '8', 4)
 
 
 def test_real_nesting_config(
@@ -185,7 +183,7 @@ def test_real_nesting_config(
     visitor.run()
 
     assert_errors(visitor, [TooDeepNestingViolation])
-    assert_error_text(visitor, '24')
+    assert_error_text(visitor, '24', 10 * 2)
 
 
 def test_regression282(

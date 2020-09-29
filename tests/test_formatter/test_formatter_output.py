@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 We use direct string assertiong on the formatter.
 
@@ -9,6 +7,9 @@ We use ``snapshottest`` to render and assert equality of the output:
 https://github.com/syrusakbary/snapshottest
 
 To update snapshots use ``--snapshot-update`` flag, when running ``pytest``.
+
+We also don't use ``absolute_path`` fixture here,
+because it renders differently on different envs.
 
 Warning::
 
@@ -32,6 +33,8 @@ def _safe_output(output: str) -> str:
 
     So our formatter will be tested on all versions correctly.
     """
+    assert pkg_version, 'Looks like version is broken'
+
     current_version_url = WemakeFormatter._doc_url  # noqa: WPS437
     general_version_url = current_version_url.replace(pkg_version, 'xx.xx')
     return output.replace(current_version_url, general_version_url)
@@ -51,8 +54,8 @@ def test_formatter(snapshot, cli_options, output):
     We only use ``WPS`` because other violations order is unpredictable.
     Since ``flake8`` plugins work in parallel.
     """
-    filename1 = './tests/fixtures/formatter1.py'
-    filename2 = './tests/fixtures/formatter2.py'
+    filename1 = './tests/fixtures/formatter/formatter1.py'
+    filename2 = './tests/fixtures/formatter/formatter2.py'
 
     process = subprocess.Popen(
         [
@@ -89,7 +92,7 @@ def test_formatter(snapshot, cli_options, output):
 ])
 def test_formatter_correct(snapshot, cli_options, output):
     """All correct code should not raise any violations and no output."""
-    filename = './tests/fixtures/correct.py'
+    filename = './tests/fixtures/formatter/correct.py'
 
     process = subprocess.Popen(
         [

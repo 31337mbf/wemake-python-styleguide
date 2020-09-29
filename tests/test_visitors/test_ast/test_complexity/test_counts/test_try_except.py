@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.complexity import (
@@ -61,6 +59,7 @@ except TypeError:
 
 def test_try_except_count_default(
     assert_errors,
+    assert_error_text,
     parse_ast_tree,
     default_options,
 ):
@@ -71,6 +70,7 @@ def test_try_except_count_default(
     visitor.run()
 
     assert_errors(visitor, [TooManyExceptCasesViolation])
+    assert_error_text(visitor, '4', baseline=3)
 
 
 @pytest.mark.parametrize('code', [

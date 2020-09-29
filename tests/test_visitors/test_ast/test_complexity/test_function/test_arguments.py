@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
-
+from wemake_python_styleguide.violations.complexity import (
+    TooManyArgumentsViolation,
+)
 from wemake_python_styleguide.visitors.ast.complexity.function import (
     FunctionComplexityVisitor,
-    TooManyArgumentsViolation,
 )
 
 
@@ -71,7 +71,7 @@ def test_single_argument_count_invalid(
     visitor.run()
 
     assert_errors(visitor, [TooManyArgumentsViolation])
-    assert_error_text(visitor, '1')
+    assert_error_text(visitor, '1', option_values.max_arguments)
 
 
 def test_two_arguments_count_invalid(
@@ -90,4 +90,4 @@ def test_two_arguments_count_invalid(
     visitor.run()
 
     assert_errors(visitor, [TooManyArgumentsViolation])
-    assert_error_text(visitor, '2')
+    assert_error_text(visitor, '2', option_values.max_arguments)

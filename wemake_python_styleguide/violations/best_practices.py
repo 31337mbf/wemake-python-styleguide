@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """
 These checks ensure that you follow the best practices.
 
-The source for these best practices is hidden inside countless hours
+The source for these best practices are inside countless hours
 we have spent debugging software or reviewing it.
 
 How do we find inspiration for new rules?
 We find some ugly code during code reviews and audits.
-Then we forbid to use this bad code forever.
-So, this error will never return to our codebase.
+Then we forbid to use those code forever.
 
 .. currentmodule:: wemake_python_styleguide.violations.best_practices
 
@@ -67,6 +64,13 @@ Summary
    WrongNamedKeywordViolation
    ApproximateConstantViolation
    StringConstantRedefinedViolation
+   IncorrectExceptOrderViolation
+   FloatKeyViolation
+   ProtectedModuleMemberViolation
+   PositionalOnlyArgumentsViolation
+   LoopControlFinallyViolation
+   ShebangViolation
+   BaseExceptionRaiseViolation
 
 Best practices
 --------------
@@ -119,6 +123,13 @@ Best practices
 .. autoclass:: WrongNamedKeywordViolation
 .. autoclass:: ApproximateConstantViolation
 .. autoclass:: StringConstantRedefinedViolation
+.. autoclass:: IncorrectExceptOrderViolation
+.. autoclass:: FloatKeyViolation
+.. autoclass:: ProtectedModuleMemberViolation
+.. autoclass:: PositionalOnlyArgumentsViolation
+.. autoclass:: LoopControlFinallyViolation
+.. autoclass:: ShebangViolation
+.. autoclass:: BaseExceptionRaiseViolation
 
 """
 
@@ -134,7 +145,7 @@ from wemake_python_styleguide.violations.base import (
 @final
 class WrongMagicCommentViolation(SimpleViolation):
     """
-    Restricts to use several control (or magic) comments.
+    Restricts to use various control (such as magic) comments.
 
     We do not allow to use:
 
@@ -147,20 +158,19 @@ class WrongMagicCommentViolation(SimpleViolation):
     Reasoning:
         We cover several different use-cases in a single rule.
         ``# noqa`` comment is restricted because it can hide other violations.
-        ``# type: some_type`` comment is restricted because
-        we can already use type annotations instead.
+        ``# type: some_type`` comment is restricted because we can already use type annotations instead.
 
     Solution:
         Use ``# noqa`` comments with specified error types.
         Use type annotations to specify types.
 
-    We still allow to use ``# type: ignore`` comment.
-    Since sometimes it is totally required.
+    We still allow using ``# type: ignore`` comment.
+    Since sometimes it is required.
 
     Example::
 
         # Correct:
-        type = MyClass.get_type()  # noqa: A001
+        type = MyClass.get_type()  # noqa: WPS125
         coordinate: int = 10
         some.int_field = 'text'  # type: ignore
 
@@ -186,7 +196,7 @@ class WrongDocCommentViolation(TokenizeViolation):
     Forbids to use empty doc comments (``#:``).
 
     Reasoning:
-        Doc comments are used to provide a documentation.
+        Doc comments are used to provide documentation.
         But supplying empty doc comments breaks this use-case.
         It is unclear why they can be used with no contents.
 
@@ -219,12 +229,10 @@ class OveruseOfNoqaCommentViolation(SimpleViolation):
     Forbids to use too many ``# noqa`` comments.
 
     We count it on a per-module basis.
-    We use :str:`wemake_python_styleguide.constants.MAX_NOQA_COMMENTS`
-    as a hard limit.
 
     Reasoning:
         Having too many ``# noqa`` comments make your code
-        less readable and clearly indicates that there's something
+        less readable and indicates that there's something
         wrong with it.
 
     Solution:
@@ -255,12 +263,12 @@ class OveruseOfNoCoverCommentViolation(SimpleViolation):
 
     Reasoning:
         Having too many ``# pragma: no cover`` comments
-        clearly indicates that there's something wrong with it.
+        indicates that there's something wrong with it.
         Moreover, it makes your tests useless, since they do not cover
-        a big partion of your code.
+        a big partition of your code.
 
     Solution:
-        Refactor your code to much the style.
+        Refactor your code to match the style.
         Or use a config file to switch off some checks.
 
     .. versionadded:: 0.8.0
@@ -281,7 +289,7 @@ class ComplexDefaultValueViolation(ASTViolation):
     or ``ast.Ellipsis`` should be moved out from defaults.
 
     Reasoning:
-        It can be tricky. Nothing stops you from making database calls or http
+        It can be tricky. Nothing stops you from making database calls or HTTP
         requests in such expressions. It is also not readable for us.
 
     Solution:
@@ -309,7 +317,7 @@ class ComplexDefaultValueViolation(ASTViolation):
 @final
 class LoopVariableDefinitionViolation(ASTViolation):
     """
-    Forbids to use anything rather than ``ast.Name`` to define loop variables.
+    Forbids to use anything other than ``ast.Name`` to define loop variables.
 
     Reasoning:
         When defining a ``for`` loop with attributes, indexes, calls,
@@ -343,7 +351,7 @@ class LoopVariableDefinitionViolation(ASTViolation):
 @final
 class ContextManagerVariableDefinitionViolation(ASTViolation):
     """
-    Forbids to use anything rather than ``ast.Name`` to define contexts.
+    Forbids to use anything other than ``ast.Name`` to define contexts.
 
     Reasoning:
         When defining a ``with`` context managers with attributes,
@@ -385,7 +393,7 @@ class MutableModuleConstantViolation(ASTViolation):
     Solution:
         Use immutable types for constants.
 
-    We only treat ``ast.Set``, ``ast.Dict``, ``ast.List``, and comprehensions
+    We only treat ``ast.Set``, ``ast.Dict``, ``ast.List`` and comprehensions
     as mutable things. All other nodes are still fine.
 
     Example::
@@ -417,7 +425,7 @@ class SameElementsInConditionViolation(ASTViolation):
     Forbids to use the same logical conditions in one expression.
 
     Reasoning:
-        Using the same name in logical condition more that once
+        Using the same name in a logical condition more than once
         indicates that you are either making a logical mistake,
         or just over-complicating your design.
 
@@ -436,6 +444,7 @@ class SameElementsInConditionViolation(ASTViolation):
 
     .. versionadded:: 0.10.0
     .. versionchanged:: 0.11.0
+    .. versionchanged:: 0.13.0
 
     """
 
@@ -449,7 +458,7 @@ class HeterogenousCompareViolation(ASTViolation):
     """
     Forbids to heterogenous operators in one compare.
 
-    Note, that we allow to mix ``>`` with ``>=``
+    Note, that we do allow mixing  ``>`` with ``>=``
     and ``<`` with ``<=`` operators.
 
     Reasoning:
@@ -488,7 +497,7 @@ class HeterogenousCompareViolation(ASTViolation):
 @final
 class WrongModuleMetadataViolation(ASTViolation):
     """
-    Forbids to have some module level variables.
+    Forbids to have some module-level variables.
 
     Reasoning:
         We discourage using module variables like ``__author__``,
@@ -498,7 +507,8 @@ class WrongModuleMetadataViolation(ASTViolation):
         Place all the metadata in ``setup.py``,
         ``setup.cfg``, or ``pyproject.toml``.
         Use proper docstrings and packaging classifiers.
-        Use ``pkg_resources`` if you need to import this data into your app.
+        Use ``importlib.metadata`` (or ``importlib_metadata`` on python < 3.8)
+        if you need to import this data into your app.
 
     See
     :py:data:`~wemake_python_styleguide.constants.MODULE_METADATA_VARIABLES_BLACKLIST`
@@ -547,7 +557,7 @@ class InitModuleHasLogicViolation(SimpleViolation):
 
     Reasoning:
         If you have logic inside the ``__init__`` module
-        it means several things:
+        It means several things:
 
         1. you are keeping some outdated stuff there, you need to refactor
         2. you are placing this logic into the wrong file,
@@ -560,14 +570,15 @@ class InitModuleHasLogicViolation(SimpleViolation):
     However, we allow to have some contents inside the ``__init__`` module:
 
     1. comments, since they are dropped before AST comes in play
-    2. docs string, because sometimes it is required to state something
+    2. docstrings are used sometimes when required to state something
 
     It is also fine when you have different users that use your code.
     And you do not want to break everything for them.
-    In this case this rule can be configured.
+    In this case, this rule can be configured.
 
     Configuration:
-        This rule is configurable with ``--i-control-code``.
+        This rule is configurable with ``--i-control-code``
+        and ``--i-dont-control-code``.
         Default:
         :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
 
@@ -592,8 +603,9 @@ class BadMagicModuleFunctionViolation(ASTViolation):
         Refactor your code to use custom methods instead.
 
     Configuration:
-        This rule is configurable with ``--i-control-code``.
-        Default:
+        This rule is configurable with ``--i-control-code``
+        and ``--i-dont-control-code``.
+    Default:
         :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
 
     .. versionadded:: 0.9.0
@@ -643,7 +655,7 @@ class DuplicateExceptionViolation(ASTViolation):
     Reasoning:
         Having the same exception name in different blocks means
         that something is not right: since only one branch will work.
-        Other one will always be ignored. So, that is clearly an error.
+        Another one will always be ignored. So, that is an error.
 
     Solution:
         Use unique exception handling rules.
@@ -679,6 +691,8 @@ class YieldInComprehensionViolation(ASTViolation):
     """
     Forbids to have ``yield`` keyword inside comprehensions.
 
+    This is a ``SyntaxError`` starting from ``python3.8``.
+
     Reasoning:
         Having the ``yield`` keyword inside comprehensions is error-prone.
         You can shoot yourself in a foot by
@@ -696,7 +710,6 @@ class YieldInComprehensionViolation(ASTViolation):
 
         list([(yield letter) for letter in 'ab'])
         # Will result in: ['a', 'b']
-
 
     See also:
         https://github.com/satwikkansal/wtfPython#-yielding-none
@@ -756,7 +769,7 @@ class NonUniqueItemsInHashViolation(ASTViolation):
 @final
 class BaseExceptionSubclassViolation(ASTViolation):
     """
-    Forbids to have duplicate items in ``set`` literals.
+    Forbids to have exception inherited from ``BaseException``.
 
     Reasoning:
         ``BaseException`` is a special case:
@@ -799,7 +812,7 @@ class TryExceptMultipleReturnPathViolation(ASTViolation):
 
     Reasoning:
         The problem with ``return`` in ``else`` and ``finally``
-        is that it is impossible to say what value is going to be actually
+        is that it is impossible to say what value is going to be
         returned without looking up the implementation details. Why?
         Because ``return`` does not expect
         that some other code will be executed after it.
@@ -852,7 +865,7 @@ class WrongKeywordViolation(ASTViolation):
     Forbids to use some ``python`` keywords.
 
     Reasoning:
-        Using some keywords generally gives you more pain that relieve.
+        Using some keywords generally gives you more pain than relieves.
 
         ``del`` keyword is not composable with other functions,
         you cannot pass it as a regular function.
@@ -861,7 +874,7 @@ class WrongKeywordViolation(ASTViolation):
         from the execution scope.
         Moreover, it has a lot of substitutions. You won't miss it!
 
-        ``pass`` keyword is just useless by design. There's no usecase for it.
+        ``pass`` keyword is just useless by design. There's no use-case for it.
         Because it does literally nothing.
 
         ``global`` and ``nonlocal`` promote bad-practices of having an external
@@ -946,9 +959,9 @@ class RaiseNotImplementedViolation(ASTViolation):
     Forbids to use ``NotImplemented`` error.
 
     Reasoning:
-        These two violations look so similar.
-        But, these violations have different use cases.
-        Use cases of ``NotImplemented`` is too limited
+        These two exceptions look similar.
+        But, they have different use cases.
+        Use cases of ``NotImplemented`` are too limited
         to be generally available.
 
     Solution:
@@ -979,8 +992,9 @@ class BaseExceptionViolation(ASTViolation):
     Forbids to use ``BaseException`` exception.
 
     Reasoning:
-        We can silence system exit and keyboard interrupt with this exception
-        handler. It is almost the same as raw ``except:`` block.
+        We can silence system exit and keyboard interrupt
+        with this exception handler.
+        It is almost the same as raw ``except:`` block.
 
     Solution:
         Handle ``Exception``, ``KeyboardInterrupt``,
@@ -1013,11 +1027,15 @@ class BooleanPositionalArgumentViolation(ASTViolation):
     Forbids to pass booleans as non-keyword parameters.
 
     Reasoning:
-        Passing boolean as regular positional
-        parameters is very non-descriptive.
-        It is almost impossible to tell, what does this parameter means.
-        And you almost always have to look up the implementation to tell
-        what is going on.
+        Passing boolean as regular positional parameters
+        are very non-descriptive.
+        It is almost impossible to tell, what does this
+        parameter mean.
+        And you almost always have to look up the implementation
+        to tell what is going on.
+        The only exception from this rule is passing booleans as a
+        non-keyword argument when it is the only passed argument.
+
 
     Solution:
         Pass booleans as keywords only.
@@ -1026,10 +1044,11 @@ class BooleanPositionalArgumentViolation(ASTViolation):
     Example::
 
         # Correct:
-        UsersRepository.update(cache=True)
+        UserRepository.update(True)
+        UsersRepository.add(user, cache=True)
 
         # Wrong:
-        UsersRepository.update(True)
+        UsersRepository.add(user, True)
 
     .. versionadded:: 0.6.0
 
@@ -1043,6 +1062,9 @@ class BooleanPositionalArgumentViolation(ASTViolation):
 class LambdaInsideLoopViolation(ASTViolation):
     """
     Forbids to use ``lambda`` inside loops.
+
+    We check ``while``, ``for``, and ``async for`` loop bodies.
+    We also check comprehension value parts.
 
     Reasoning:
         It is error-prone to use ``lambda`` inside
@@ -1065,6 +1087,7 @@ class LambdaInsideLoopViolation(ASTViolation):
 
     .. versionadded:: 0.5.0
     .. versionchanged:: 0.11.0
+    .. versionchanged:: 0.14.0
 
     See also:
         https://docs.python-guide.org/writing/gotchas/#late-binding-closures
@@ -1085,14 +1108,14 @@ class UnreachableCodeViolation(ASTViolation):
     cannot be executed by python's interpreter.
 
     This is probably caused by ``return`` or ``raise`` statements.
-    However, we can not cover 100% of truly unreachable code by this rule.
+    However, we cannot cover 100% of truly unreachable code by this rule.
     This happens due to the dynamic nature of python.
     For example, detecting that ``1 / some_value`` would sometimes raise
     an exception is too complicated and is out of the scope of this rule.
 
     Reasoning:
-        Having dead code in your project is an indicator that you
-        do not care about your code base at all.
+        Having dead code in your project is an indicator that
+        you do not care about your codebase at all.
         It dramatically reduces code quality and readability.
         It also demotivates team members.
 
@@ -1130,7 +1153,8 @@ class StatementHasNoEffectViolation(ASTViolation):
     Reasoning:
         Statements that just access the value or expressions
         used as statements indicate that your code
-        contains deadlines. They just pollute your codebase and do nothing.
+        contains deadlines.
+        They just pollute your codebase and do nothing.
 
     Solution:
         Refactor your code in case it was a typo or error.
@@ -1150,7 +1174,6 @@ class StatementHasNoEffectViolation(ASTViolation):
 
     .. versionadded:: 0.5.0
     .. versionchanged:: 0.11.0
-
     """
 
     error_template = 'Found statement that has no effect'
@@ -1165,7 +1188,7 @@ class MultipleAssignmentsViolation(ASTViolation):
 
     Reasoning:
         Multiple assignments on the same line might not do what you think
-        they do. They can also grown pretty long. And you will not notice
+        they do. They can also grow pretty long. And you will not notice
         the rising complexity of your code.
 
     Solution:
@@ -1196,7 +1219,7 @@ class NestedFunctionViolation(ASTViolation):
     Forbids to have nested functions.
 
     Reasoning:
-        Nesting functions is a bad practice.
+        Nesting functions is bad practice.
         It is hard to test them, it is hard then to separate them.
         People tend to overuse closures, so it's hard to manage the dataflow.
 
@@ -1237,13 +1260,13 @@ class NestedClassViolation(ASTViolation):
 
     Reasoning:
         Nested classes are really hard to manage.
-        You can not even create an instance of this class in many cases.
+        You cannot even create an instance of this class in many cases.
         Testing them is also really hard.
 
     Solution:
-        Just write flat classes, there's no need nest them.
+        Just write flat classes, there's no need to nest them.
         If you are nesting classes inside a function for parametrization,
-        then you will probably need to use different design (or metaclasses).
+        then you will probably need to use a different design (or metaclasses).
 
     Configuration:
         This rule is configurable with ``--nested-classes-whitelist``.
@@ -1279,7 +1302,7 @@ class MagicNumberViolation(ASTViolation):
     appears in your code out of nowhere. Like ``42``. Or ``0.32``.
 
     Reasoning:
-        It is very hard to remember what these numbers actually mean.
+        It is very hard to remember what these numbers mean.
         Why were they used? Should they ever be changed?
         Or are they eternal like ``3.14``?
 
@@ -1297,7 +1320,7 @@ class MagicNumberViolation(ASTViolation):
         # Wrong:
         total = get_items_from_cart() * 3.33
 
-    What are numbers that we exclude from this check?
+    What are the numbers that we exclude from this check?
     Any numbers that are assigned to a variable, array, dictionary,
     or keyword arguments inside a function.
     ``int`` numbers that are in range ``[-10, 10]`` and
@@ -1416,6 +1439,8 @@ class ProtectedModuleViolation(ASTViolation):
     """
     Forbids to import protected modules.
 
+    Related to :class:`~ProtectedModuleMemberViolation`.
+
     Reasoning:
         When importing protected modules we break a contract
         that authors of this module enforce.
@@ -1423,25 +1448,26 @@ class ProtectedModuleViolation(ASTViolation):
         our code at any moment.
 
     Solution:
-        Do not import anything from protected modules.
+        Do not import protected modules.
         Respect the encapsulation.
 
     Example::
 
         # Correct:
+        import public_module
         from some.public.module import FooClass
 
         # Wrong:
         import _compat
         from some._protected.module import BarClass
-        from some.module import _protected
 
     .. versionadded:: 0.3.0
     .. versionchanged:: 0.11.0
+    .. versionchanged:: 0.14.0
 
     """
 
-    error_template = 'Found protected module import'
+    error_template = 'Found protected module import: {0}'
     code = 436
     previous_codes = {440}
 
@@ -1499,7 +1525,7 @@ class StopIterationInsideGeneratorViolation(ASTViolation):
         ``StopIteration`` should not be raised explicitly in generators.
 
     Solution:
-        Use return statement to get out of a generator.
+        Use a return statement to get out of a generator.
 
     Example::
 
@@ -1529,15 +1555,15 @@ class StopIterationInsideGeneratorViolation(ASTViolation):
 @final
 class WrongUnicodeEscapeViolation(TokenizeViolation):
     r"""
-    Forbids to use unicode escape sequences in binary strings.
+    Forbids to use Unicode escape sequences in binary strings.
 
     Reasoning:
-        Binary strings do not work with unicode.
-        Having unicode escape characters in there means
+        Binary strings do not work with Unicode.
+        Having Unicode escape characters in there means
         that you have an error in your code.
 
     Solution:
-        Use regular strings when escaping unicode strings.
+        Use regular strings when escaping Unicode strings.
 
     Example::
 
@@ -1571,18 +1597,10 @@ class BlockAndLocalOverlapViolation(ASTViolation):
     2. Functions and async functions definitions
     3. Classes, methods, and async methods definitions
     4. For and async for loops variables
-    5. Except block exception aliases
+    5. Except for block exception aliases
 
-    We allow local variables to overlap theirselfs,
-    we forbid block varibals to overlap theirselfs.
-
-    Reasoning:
-        A lot of complex errors might happen when
-        you shadow local varibales with block variables
-        or when you shadow block variables with local variables.
-
-    Solution:
-        Use names that do not overlap.
+    We allow local variables to overlap themself,
+    we forbid block variables to overlap themself.
 
     Example::
 
@@ -1614,14 +1632,10 @@ class ControlVarUsedAfterBlockViolation(ASTViolation):
 
     1. ``for`` loop unpacked variables
     2. ``with`` context variables
-    3. ``except`` exception names
 
     Reasoning:
         Variables leaking from the blocks can damage your logic.
         It might not contain what you think they contain.
-        Some variables even might be deleted right after the block,
-        just like in ``except Exception as exc:``
-        where ``exc`` won't be in scope after ``except`` body.
 
     Solution:
         Use names inside the scope they are defined.
@@ -1643,6 +1657,7 @@ class ControlVarUsedAfterBlockViolation(ASTViolation):
         https://github.com/satwikkansal/wtfPython#-explanation-32
 
     .. versionadded:: 0.12.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -1655,13 +1670,14 @@ class OuterScopeShadowingViolation(ASTViolation):
     """
     Forbids to shadow variables from outer scopes.
 
-    We check function, method, and module scopes.
-    While we do not check class scope. Because class level constants
+    We check the function, method, and module scopes.
+    While we do not check the class scope. Because class level constants
     are not available via regular name,
     and they are scope to ``ClassName.var_name``.
 
     Reasoning:
-        Shadowing can lead you to a big pile of strage and unexpected bugs.
+        Shadowing can lead you to a big pile of storage and unexpected bugs.
+
 
     Solution:
         Use different names and do not allow scoping.
@@ -1691,7 +1707,7 @@ class OuterScopeShadowingViolation(ASTViolation):
 @final
 class UnhashableTypeInHashViolation(ASTViolation):
     """
-    Forbids to use exlicit unhashable types as set items and dict keys.
+    Forbids to use explicit unhashable types of asset items and dict keys.
 
     Reasoning:
         This will resolve in ``TypeError`` in runtime.
@@ -1718,18 +1734,19 @@ class UnhashableTypeInHashViolation(ASTViolation):
 @final
 class WrongKeywordConditionViolation(ASTViolation):
     """
-    Forbids to use exlicit falsly-evaluated conditions with several keywords.
+    Forbids to use explicit falsely-evaluated conditions with several keywords.
 
     We check:
 
     - ``ast.While``
     - ``ast.Assert``
 
-    We only check constants. We do not check variables, attributes, calls, etc.
+    We do not check variables, attributes, calls, bool and bin operators, etc.
+    We disallow constants and some expressions.
 
     Reasoning:
-        Some conditions clearly tell us that this node won't work correctly.
-        So, we need to check that we can fix that.
+        Some conditions tell us that this node won't work correctly.
+        So, we need to check if we can fix that.
 
     Solution:
         Remove the unreachable node, or change the condition item.
@@ -1749,24 +1766,25 @@ class WrongKeywordConditionViolation(ASTViolation):
             ...
 
     .. versionadded:: 0.12.0
+    .. versionchanged:: 0.13.0
 
     """
 
-    error_template = 'Found wrong keyword condition: {0}'
+    error_template = 'Found incorrect keyword condition'
     code = 444
 
 
 @final
 class WrongNamedKeywordViolation(ASTViolation):
     """
-    Forbids to have wrong named keywords in starred dicts.
+    Forbids to have incorrectly named keywords in the starred dicts.
 
     Reasoning:
-        Using wrong keywords in starred dict.
+        Using the incorrect keywords in the starred dict.
         Eg.: ``print(**{'@': 1})``.
 
     Solution:
-        Don't use incorrect identifiers for keywords.
+        Don't use incorrect identifiers as keywords.
 
     Example::
 
@@ -1781,7 +1799,7 @@ class WrongNamedKeywordViolation(ASTViolation):
     """
 
     code = 445
-    error_template = 'Found wrong named keyword in starred dict'
+    error_template = 'Found incorrectly named keyword in the starred dict'
 
 
 @final
@@ -1792,8 +1810,8 @@ class ApproximateConstantViolation(ASTViolation):
     Reasoning:
         Some constants are already defined.
         No need to write them again, use existing values.
-        We just compare numbers as strings and raise this violation
-        when they start with the same chars.
+        We just compare numbers as strings and raise this
+        violation when they start with the same chars.
 
     Solution:
         Use pre-defined constants.
@@ -1826,13 +1844,13 @@ class ApproximateConstantViolation(ASTViolation):
 @final
 class StringConstantRedefinedViolation(ASTViolation):
     """
-    Forbid to use alphabet as a string.
+    Forbid to use the alphabet as a string.
 
     Reasoning:
         Some constants are already defined.
-        No need to write them again, use existing values.
+        No need to write to them again, use existing values.
         We just compare strings and raise this violation
-        when they have exactly the same chars.
+        when they have the same chars.
 
     Solution:
         Use pre-defined constants.
@@ -1855,3 +1873,268 @@ class StringConstantRedefinedViolation(ASTViolation):
 
     error_template = 'Found alphabet as strings: {0}'
     code = 447
+
+
+@final
+class IncorrectExceptOrderViolation(ASTViolation):
+    """
+    Forbids the use of incorrect order of ``except``.
+
+    Note, we only check for built-in exceptions.
+    Because we cannot statically identify
+    the inheritance order of custom ones.
+
+    Reasoning:
+        Using incorrect order of exceptions is error-prone, since
+        you end up with some unreachable exception clauses.
+
+    Solution:
+        Use the correct order of exceptions.
+
+    Example::
+
+        # Correct:
+        try:
+            ...
+        except ValueError:
+            ...
+        except Exception:
+            ...
+
+        # Wrong:
+        try:
+            ...
+        except Exception:
+            ...
+        except ValueError:
+            ...
+
+    See also:
+        https://bit.ly/36MHlzw
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found incorrect exception order'
+    code = 448
+
+
+@final
+class FloatKeyViolation(ASTViolation):
+    """
+    Forbids to define and use ``float`` keys.
+
+    Reasoning:
+        ``float`` is a very ugly data type.
+        It has a lot of "precision" errors.
+        When we use ``float`` as keys we can hit this wall.
+        Moreover, we cannot use ``float`` keys with lists, by design.
+
+    Solution:
+        Use other data types: integers, decimals, or use fuzzy logic.
+
+    Example::
+
+        # Correct:
+        some = {1: 'a'}
+        some[1]
+
+        # Wrong:
+        some = {1.0: 'a'}
+        some[1.0]
+
+    .. versionadded:: 0.13.0
+
+    """
+
+    error_template = 'Found float used as a key'
+    code = 449
+
+
+@final
+class ProtectedModuleMemberViolation(ASTViolation):
+    """
+    Forbids to import protected objects from modules.
+
+    Related to :class:`~ProtectedModuleViolation`.
+
+    Reasoning:
+        When importing protected modules' members, we break the contract
+        which the authors of this module enforce.
+        By disrespecting encapsulation, we may break the code at any moment.
+
+    Solution:
+        Do not import protected objects from modules.
+        Respect the encapsulation.
+
+    Example::
+
+        # Correct:
+        from some.public.module import FooClass
+
+        # Wrong:
+        from some.module import _protected
+        from some.module import _protected as not_protected
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found protected object import: {0}'
+    code = 450
+
+
+@final
+class PositionalOnlyArgumentsViolation(ASTViolation):
+    """
+    Forbids to use positional only or ``/`` arguments.
+
+    This violation is only raised for ``python3.8+``,
+    earlier versions do not have this concept.
+
+    Reasoning:
+        This is a very rare case.
+        Almost exclusively used by C code and stdlib.
+        There's no point in declaring your own parameters as positional only.
+        It will break your code!
+
+    Solution:
+        Use regular arguments.
+        In case you are working with C, then this violation
+        can be ignored.
+
+    Example::
+
+        # Correct:
+        def my_function(first, second):
+            ...
+
+        # Wrong:
+        def my_function(first, /, second):
+            ...
+
+    See also:
+        https://www.python.org/dev/peps/pep-0570/
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found positional-only argument'
+    code = 451
+
+
+class LoopControlFinallyViolation(ASTViolation):
+    """
+    Forbids to use ``break`` and ``continue`` in ``finally`` case.
+
+    Related to :class:`~TryExceptMultipleReturnPathViolation`.
+
+    Reasoning:
+        Putting any control statements in `finally` is a
+        terrible practice, because `finally` is implicitly
+        called and can cause damage to your logic with
+        its implicitness.
+        It should not be allowed.
+
+    Solution:
+        Remove ``break`` and ``continue`` from ``finally`` blocks.
+
+    Example::
+
+        # Correct:
+        try:
+            ...
+        finally:
+            ...
+
+        # Wrong:
+        try:
+            ...
+        finally:
+            break
+
+        try:
+            ...
+        finally:
+            continue
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found `break` or `continue` in `finally` block'
+    code = 452
+
+
+@final
+class ShebangViolation(SimpleViolation):
+    """
+    Forbids to execute the file with shebang incorrectly set.
+
+    A violation is raised in these cases :
+        - Shebang is present but the file is not executable.
+        - The file is executable but no shebang is present.
+        - Shebang is present but does not contain "python".
+        - Whitespace is present before the shebang.
+        - Presence of blank lines or commented lines before the shebang.
+
+    Reasoning:
+        Setting the shebang incorrectly causes an executable mismatch.
+
+    Solution:
+        Ensure that the shebang is present on the first line,
+        and contains "python", and there is no leading whitespace.
+
+    Example::
+
+        # Correct:
+        #!/usr/bin/env python
+
+        # Wrong:
+        #!/usr/bin/env
+            #!/usr/bin/env python
+
+    .. versionadded:: 0.14.0
+
+    """
+
+    error_template = 'Found executable mismatch: {0}'
+    code = 453
+
+
+@final
+class BaseExceptionRaiseViolation(ASTViolation):
+    """
+    Forbids to raise ``Exception`` or ``BaseException``.
+
+    Reasoning:
+        ``Exception`` and ``BaseException`` are inconvenient to catch.
+        And when you catch them you can accidentally suppress other exceptions.
+
+    Solution:
+        Use a user-defined exception, subclassed from ``Exception``.
+
+    Example::
+
+        # Correct:
+        raise UserNotFoundError
+        raise UserNotFoundError("cannot find user with the given id")
+
+        # Wrong:
+        raise Exception
+        raise Exception("user not found")
+        raise BaseException
+        raise BaseException("user not found")
+
+    See also:
+        https://docs.python.org/3/library/exceptions.html#exception-hierarchy
+        https://docs.python.org/3/tutorial/errors.html#user-defined-exceptions
+
+    .. versionadded:: 0.15.0
+
+    """
+
+    error_template = 'Found wrong `raise` exception type: {0}'
+    code = 454

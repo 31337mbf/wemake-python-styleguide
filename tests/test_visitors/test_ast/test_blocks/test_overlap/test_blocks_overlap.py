@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
+from wemake_python_styleguide.compat.constants import PY38
 from wemake_python_styleguide.violations.best_practices import (
     BlockAndLocalOverlapViolation,
 )
@@ -69,6 +68,13 @@ def context():
         ...
 """
 
+import_and_walrus = """
+import overlap
+
+if overlap := other():
+    ...
+"""
+
 # Correct:
 
 unused_variables_overlap1 = """
@@ -98,6 +104,13 @@ def context():
         ...
 """
 
+annotation_overlap = """
+def context():
+    conn: Connection
+    with db.get_conn() as conn:
+        ...
+"""
+
 
 @pytest.mark.parametrize('code', [
     import_and_class1,
@@ -108,6 +121,10 @@ def context():
     loop_and_with,
     loop_and_loop1,
     loop_and_loop2,
+    pytest.param(
+        import_and_walrus,
+        marks=pytest.mark.skipif(not PY38, reason='walrus appeared in 3.8'),
+    ),
 ])
 def test_block_overlap(
     assert_errors,
@@ -131,15 +148,16 @@ def test_block_overlap(
     unused_variables_overlap1,
     unused_variables_overlap2,
     unused_variables_overlap3,
+    annotation_overlap,
 ])
-def test_block_unused_overlap(
+def test_block_correct_overlap(
     assert_errors,
     parse_ast_tree,
     default_options,
     code,
     mode,
 ):
-    """Testing that overlaps between unused vars are ok."""
+    """Testing that correct overlaps are ok."""
     tree = parse_ast_tree(mode(code))
 
     visitor = BlockVariableVisitor(default_options, tree=tree)

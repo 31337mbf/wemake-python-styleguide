@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.best_practices import (
@@ -87,6 +85,31 @@ class Test(object):
         {0}
             ...
         {1}
+"""
+
+# Regressions:
+
+correct_except_regression1115 = """
+try:
+    vehicles = self.client.list_vehicles()
+except tesla_api.AuthenticationError as e:
+    self.client.close()
+    raise GUIError(_("Login details are incorrect.")) from e
+except tesla_api.aiohttp.client_exceptions.ClientConnectorError as e:
+    self.client.close()
+    raise GUIError(_("Network error.")) from e
+"""
+
+wrong_except_regression1115 = """
+try:
+    ...
+except Exception as e:
+    ...
+
+try:
+    ...
+except Exception as e:
+    ...
 """
 
 
@@ -196,7 +219,7 @@ def test_except_block_correct(
     assert_errors,
     parse_ast_tree,
     except_statement,
-    assign_statement,
+    assign_and_annotation_statement,
     context,
     first_name,
     second_name,
@@ -206,7 +229,7 @@ def test_except_block_correct(
     """Ensures that different variables do not overlap."""
     code = context.format(
         except_statement.format(first_name),
-        assign_statement.format(second_name),
+        assign_and_annotation_statement.format(second_name),
     )
     tree = parse_ast_tree(mode(code))
 
@@ -214,3 +237,28 @@ def test_except_block_correct(
     visitor.run()
 
     assert_errors(visitor, [])
+
+
+@pytest.mark.parametrize(('code', 'violations'), [
+    (correct_except_regression1115, []),
+    (wrong_except_regression1115, [BlockAndLocalOverlapViolation]),
+])
+def test_except_block_regression1115(
+    assert_errors,
+    parse_ast_tree,
+    code,
+    violations,
+    default_options,
+):
+    """
+    Ensures using variables is fine.
+
+    See:
+    https://github.com/wemake-services/wemake-python-styleguide/issues/1115
+    """
+    tree = parse_ast_tree(code)
+
+    visitor = BlockVariableVisitor(default_options, tree=tree)
+    visitor.run()
+
+    assert_errors(visitor, violations)

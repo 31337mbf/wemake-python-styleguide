@@ -2,20 +2,19 @@ SHELL:=/usr/bin/env bash
 
 .PHONY: lint
 lint:
-	mypy wemake_python_styleguide
-	flake8 .
-	autopep8 -r . --diff --exclude=./tests/fixtures/** --exit-code
-	xenon --max-absolute B --max-modules A --max-average A wemake_python_styleguide
-	lint-imports
+	poetry run mypy wemake_python_styleguide
+	poetry run flake8 .
+	poetry run autopep8 -r . --diff --exclude=./tests/fixtures/** --exit-code
+	poetry run lint-imports
 	poetry run doc8 -q docs
 
 .PHONY: unit
 unit:
-	pytest
+	poetry run pytest
 
 .PHONY: package
 package:
-	poetry check
+	poetry run poetry check
 	poetry run pip check
 	poetry run safety check --bare --full-report
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Provides configuration options for ``wemake-python-styleguide``.
 
@@ -41,11 +39,23 @@ You can also show all options that ``flake8`` supports by running:
     variable and module name, defaults to
     :str:`wemake_python_styleguide.options.defaults.MAX_NAME_LENGTH`
 - ``i-control-code`` - whether you control ones who use your code,
-    more rules are enforced when you do control it, defaults to
+    more rules are enforced when you do control it,
+    opposite to ``--i-dont-control-code``, defaults to
     :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
+- ``i-dont-control-code`` - whether you control ones who use your code,
+    more rules are enforced when you do control it,
+    opposite to ``--i-control-code``, defaults to
+    :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
+- ``nested-classes-whitelist`` - list of nested classes' names we allow to use,
+    defaults to
+    :str:`wemake_python_styleguide.options.defaults.NESTED_CLASSES_WHITELIST`
 - ``max-noqa-comments`` - maximum number of `noqa` allowed in a module,
     defaults to
     :str:`wemake_python_styleguide.options.defaults.MAX_NOQA_COMMENTS`
+- ``allowed-domain-names`` - list of allowed domain names, defaults to
+    :str:`wemake_python_styleguide.options.defaults.ALLOWED_DOMAIN_NAMES`
+- ``forbidden-domain-names`` - list of forbidden domain names, defaults to
+    :str:`wemake_python_styleguide.options.defaults.FORBIDDEN_DOMAIN_NAMES`
 
 .. rubric:: Complexity options
 
@@ -109,21 +119,27 @@ You can also show all options that ``flake8`` supports by running:
 - ``max-attributes`` - maximum number of public instance attributes,
     defaults to
     :str:`wemake_python_styleguide.options.defaults.MAX_ATTRIBUTES`
-- ``nested-classes-whitelist`` - list of nested classes' names we allow to use,
-    defaults to
+- ``max-cognitive-score`` - maximum amount of cognitive complexity
+    per function, defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_COGNITIVE_SCORE`
+- ``max-cognitive-average`` - maximum amount of cognitive complexity
+    per module, defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_COGNITIVE_AVERAGE`
     :str:`wemake_python_styleguide.options.defaults.NESTED_CLASSES_WHITELIST`
-
+- ``max-call-level`` - maximum number of call chains, defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_CALL_LEVEL`
+- ``max-annotation-complexity`` - maximum number of nested annotations,
+    defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_ANN_COMPLEXITY`
+- ``max-import-from-members`` - maximum number of names that can be imported
+    from module, defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_IMPORT_FROM_MEMBERS`
+- ``max-tuple-unpack-length`` - maximum number of variables in tuple unpacking,
+    defaults to
+    :str:`wemake_python_styleguide.options.defaults.MAX_TUPLE_UNPACK_LENGTH`
 """
 
-from typing import (
-    ClassVar,
-    Dict,
-    FrozenSet,
-    Mapping,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import ClassVar, Mapping, Optional, Sequence, Union
 
 import attr
 from flake8.options.manager import OptionManager
@@ -131,11 +147,7 @@ from typing_extensions import final
 
 from wemake_python_styleguide.options import defaults
 
-ConfigValuesTypes = Union[str, int, bool, FrozenSet[str]]
-
-#: Immutable config values passed from `flake8`.
-# TODO: why do we need this type? (it is not used anywhere...)
-ConfigValues = Mapping[str, ConfigValuesTypes]
+ConfigValuesTypes = Union[str, int, bool, Sequence[str]]
 
 
 @final
@@ -145,21 +157,28 @@ class _Option(object):
 
     long_option_name: str
     default: ConfigValuesTypes
-    help: str
-    type: Optional[str] = 'int'  # noqa: A003
+    help: str  # noqa: WPS125
+    type: Optional[str] = 'int'  # noqa: WPS125
     parse_from_config: bool = True
     action: str = 'store'
     comma_separated_list: bool = False
+    dest: Optional[str] = None
 
     def __attrs_post_init__(self):
         """Is called after regular init is done."""
         object.__setattr__(  # noqa: WPS609
-            self, 'help', ' '.join((self.help, 'Defaults to: %default')),
+            self, 'help', ' '.join(
+                (self.help, 'Defaults to: %default'),  # noqa: WPS323
+            ),
         )
 
-    def asdict_no_none(self) -> Dict[str, ConfigValuesTypes]:
-        dct = attr.asdict(self)
-        return {key: opt for key, opt in dct.items() if opt is not None}
+    def asdict_no_none(self) -> Mapping[str, ConfigValuesTypes]:
+        """We need this method to return options, but filter out ``None``."""
+        return {
+            key: opt
+            for key, opt in attr.asdict(self).items()
+            if opt is not None
+        }
 
 
 @final
@@ -167,6 +186,67 @@ class Configuration(object):
     """Simple configuration store with all options."""
 
     _options: ClassVar[Sequence[_Option]] = [
+        # General:
+
+        _Option(
+            '--min-name-length',
+            defaults.MIN_NAME_LENGTH,
+            'Minimum required length of variable and module names.',
+        ),
+
+        _Option(
+            '--max-name-length',
+            defaults.MAX_NAME_LENGTH,
+            'Maximum possible length of the variable and module names.',
+        ),
+
+        _Option(
+            '--i-control-code',
+            defaults.I_CONTROL_CODE,
+            'Whether you control ones who use your code.',
+            action='store_true',
+            type=None,
+            dest='i_control_code',
+        ),
+
+        _Option(
+            '--i-dont-control-code',
+            defaults.I_CONTROL_CODE,
+            'Whether you control ones who use your code.',
+            action='store_false',
+            type=None,
+            dest='i_control_code',
+            parse_from_config=False,
+        ),
+
+        _Option(
+            '--max-noqa-comments',
+            defaults.MAX_NOQA_COMMENTS,
+            'Maximum amount of `noqa` comments per module.',
+        ),
+
+        _Option(
+            '--nested-classes-whitelist',
+            defaults.NESTED_CLASSES_WHITELIST,
+            'List of nested classes names we allow to use.',
+            type='string',
+            comma_separated_list=True,
+        ),
+        _Option(
+            '--allowed-domain-names',
+            defaults.ALLOWED_DOMAIN_NAMES,
+            "Domain names that are removed from variable names' blacklist.",
+            type='string',
+            comma_separated_list=True,
+        ),
+        _Option(
+            '--forbidden-domain-names',
+            defaults.FORBIDDEN_DOMAIN_NAMES,
+            "Domain names that extends variable names' blacklist.",
+            type='string',
+            comma_separated_list=True,
+        ),
+
         # Complexity:
 
         _Option(
@@ -289,40 +369,37 @@ class Configuration(object):
             'Maximum number of public instance attributes.',
         ),
 
-        # General:
-
         _Option(
-            '--min-name-length',
-            defaults.MIN_NAME_LENGTH,
-            'Minimum required length of variable and module names.',
+            '--max-cognitive-score',
+            defaults.MAX_COGNITIVE_SCORE,
+            'Maximum amount of cognitive complexity per function.',
         ),
 
         _Option(
-            '--max-name-length',
-            defaults.MAX_NAME_LENGTH,
-            'Maximum possible length of the variable and module names.',
+            '--max-cognitive-average',
+            defaults.MAX_COGNITIVE_AVERAGE,
+            'Maximum amount of average cognitive complexity per module.',
         ),
 
         _Option(
-            '--i-control-code',
-            defaults.I_CONTROL_CODE,
-            'Whether you control ones who use your code.',
-            action='store_true',
-            type=None,
+            '--max-call-level',
+            defaults.MAX_CALL_LEVEL,
+            'Maximum number of call chains.',
         ),
-
         _Option(
-            '--nested-classes-whitelist',
-            defaults.NESTED_CLASSES_WHITELIST,
-            'List of nested classes names we allow to use.',
-            type='string',
-            comma_separated_list=True,
+            '--max-annotation-complexity',
+            defaults.MAX_ANN_COMPLEXITY,
+            'Maximum number of nested annotations.',
         ),
-
         _Option(
-            '--max-noqa-comments',
-            defaults.MAX_NOQA_COMMENTS,
-            'Maximum amount of `noqa` comments per module.',
+            '--max-import-from-members',
+            defaults.MAX_IMPORT_FROM_MEMBERS,
+            'Maximum number of names that can be imported from module.',
+        ),
+        _Option(
+            '--max-tuple-unpack-length',
+            defaults.MAX_TUPLE_UNPACK_LENGTH,
+            'Maximum number of variables in a tuple unpacking.',
         ),
     ]
 

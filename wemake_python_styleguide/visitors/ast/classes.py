@@ -1,25 +1,21 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from collections import defaultdict
-from typing import ClassVar, DefaultDict, FrozenSet, List, Optional, Tuple
+from typing import ClassVar, DefaultDict, FrozenSet, List, Optional
 
 from typing_extensions import final
 
 from wemake_python_styleguide import constants, types
 from wemake_python_styleguide.compat.aliases import AssignNodes, FunctionNodes
 from wemake_python_styleguide.compat.functions import get_assign_targets
-from wemake_python_styleguide.logic import (
-    classes,
-    functions,
-    nodes,
-    prop_access,
-    source,
-    strings,
-    walk,
-)
+from wemake_python_styleguide.logic import nodes, source, walk
 from wemake_python_styleguide.logic.arguments import function_args, super_args
 from wemake_python_styleguide.logic.naming import access, name_nodes
+from wemake_python_styleguide.logic.tree import (
+    attributes,
+    classes,
+    functions,
+    strings,
+)
 from wemake_python_styleguide.violations import best_practices as bp
 from wemake_python_styleguide.violations import consistency, oop
 from wemake_python_styleguide.visitors import base, decorators
@@ -68,19 +64,27 @@ class WrongClassVisitor(base.BaseNodeVisitor):
                 self.add_violation(oop.WrongBaseClassViolation(base_name))
                 continue
 
-            id_attr = getattr(base_name, 'id', None)
-            if id_attr == 'BaseException':
-                self.add_violation(bp.BaseExceptionSubclassViolation(node))
-            elif id_attr == 'object' and len(node.bases) >= 2:
-                self.add_violation(
-                    consistency.ObjectInBaseClassesListViolation(
-                        node, text=id_attr,
-                    ),
-                )
-            elif classes.is_forbidden_super_class(id_attr):
-                self.add_violation(
-                    oop.BuiltinSubclassViolation(node, text=id_attr),
-                )
+            self._check_base_classes_rules(node, base_name)
+
+    def _check_base_classes_rules(
+        self,
+        node: ast.ClassDef,
+        base_name: ast.expr,
+    ) -> None:
+        id_attr = getattr(base_name, 'id', None)
+
+        if id_attr == 'BaseException':
+            self.add_violation(bp.BaseExceptionSubclassViolation(node))
+        elif id_attr == 'object' and len(node.bases) >= 2:
+            self.add_violation(
+                consistency.ObjectInBaseClassesListViolation(
+                    node, text=id_attr,
+                ),
+            )
+        elif classes.is_forbidden_super_class(id_attr):
+            self.add_violation(
+                oop.BuiltinSubclassViolation(node, text=id_attr),
+            )
 
     def _check_wrong_body_nodes(self, node: ast.ClassDef) -> None:
         for sub_node in node.body:
@@ -96,10 +100,10 @@ class WrongClassVisitor(base.BaseNodeVisitor):
         elif isinstance(base_class, ast.Attribute):
             return all(
                 isinstance(sub_node, (ast.Name, ast.Attribute))
-                for sub_node in prop_access.parts(base_class)
+                for sub_node in attributes.parts(base_class)
             )
         elif isinstance(base_class, ast.Subscript):
-            parts = list(prop_access.parts(base_class))
+            parts = list(attributes.parts(base_class))
             subscripts = list(filter(
                 lambda part: isinstance(part, ast.Subscript), parts,
             ))
@@ -184,9 +188,19 @@ class WrongMethodVisitor(base.BaseNodeVisitor):
         self,
         node: types.AnyFunctionDef,
     ) -> Optional[ast.Call]:
-        # consider next body as possible candidate of useless method:
-        # 1) Optional[docstring]
-        # 2) return statement with call
+        """
+        Fetches ``super`` call statement from function definition.
+
+        Consider next body as possible candidate of useless method:
+
+        1. Optional[docstring]
+        2. single return statement with call
+        3. single statement with call, but without return
+
+        Related:
+        https://github.com/wemake-services/wemake-python-styleguide/issues/1168
+
+        """
         statements_number = len(node.body)
         if statements_number > 2 or statements_number == 0:
             return None
@@ -195,14 +209,13 @@ class WrongMethodVisitor(base.BaseNodeVisitor):
             if not strings.is_doc_string(node.body[0]):
                 return None
 
-        return_stmt = node.body[-1]
-        if not isinstance(return_stmt, ast.Return):
-            return None
-
-        call_stmt = return_stmt.value
-        if not isinstance(call_stmt, ast.Call):
-            return None
-        return call_stmt
+        stmt = node.body[-1]
+        if isinstance(stmt, ast.Return):
+            call_stmt = stmt.value
+            return call_stmt if isinstance(call_stmt, ast.Call) else None
+        elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call):
+            return stmt.value
+        return None
 
     def _check_useless_overwritten_methods(
         self,
@@ -210,8 +223,7 @@ class WrongMethodVisitor(base.BaseNodeVisitor):
         class_name: str,
     ) -> None:
         if node.decorator_list:
-            # any decorator can change logic
-            # and make this overwrite useful
+            # Any decorator can change logic and make this overwrite useful.
             return
 
         call_stmt = self._get_call_stmt_of_useless_method(node)
@@ -332,26 +344,8 @@ class ClassAttributeVisitor(base.BaseNodeVisitor):
         self._check_attributes_shadowing(node)
         self.generic_visit(node)
 
-    def _get_attributes(
-        self,
-        node: ast.ClassDef,
-    ) -> Tuple[List[types.AnyAssign], List[ast.Attribute]]:
-        class_attributes = []
-        instance_attributes = []
-
-        for child in ast.walk(node):
-            if isinstance(child, ast.Attribute):
-                if isinstance(child.ctx, ast.Store):
-                    instance_attributes.append(child)
-
-            if isinstance(child, AssignNodes):
-                if nodes.get_context(child) == node and child.value:
-                    class_attributes.append(child)
-
-        return class_attributes, instance_attributes
-
     def _check_attributes_shadowing(self, node: ast.ClassDef) -> None:
-        class_attributes, instance_attributes = self._get_attributes(node)
+        class_attributes, instance_attributes = classes.get_attributes(node)
         class_attribute_names = set(
             name_nodes.flat_variable_names(class_attributes),
         )
@@ -396,12 +390,16 @@ class ClassMethodOrderVisitor(base.BaseNodeVisitor):
                 return
 
     def _ideal_order(self, first: str) -> int:
-        if first == '__new__':
-            return 4  # highest priority
-        if first == '__init__':
-            return 3
+        base_methods_order = {
+            '__new__': 6,  # highest priority
+            '__init__': 5,
+            '__call__': 4,
+            '__await__': 3,
+        }
+        public_and_magic_methods_priority = 2
+
         if access.is_protected(first):
             return 1
         if access.is_private(first):
             return 0  # lowest priority
-        return 2  # public and magic methods
+        return base_methods_order.get(first, public_and_magic_methods_priority)

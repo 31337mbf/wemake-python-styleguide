@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Naming is hard! It is, in fact, one of the two hardest problems.
 
@@ -18,10 +16,12 @@ It is partially automated with this linter, but:
 General
 ~~~~~~~
 
-- Use only ``ASCII`` chars for names
+- Use only ``ASCII`` characters for names
 - Do not use transliteration from any other languages, translate names instead
 - Use clear names, do not use words that do not mean anything like ``obj``
 - Use names of an appropriate length: not too short, not too long
+- Do not mask builtins
+- Do not use unreadable charachter sequences like ``O0`` and ``Il``
 - Protected members should use underscore as the first char
 - Private names with two leading underscores are not allowed
 - If you need to explicitly state that the variable is unused,
@@ -68,7 +68,7 @@ Class attributes
 ~~~~~~~~~~~~~~~~
 
 - Class attributes must use ``snake_case``  with no exceptions
-- Enum fields also must use ``snamek_case``
+- Enum fields also must use ``snake_case``
 
 Functions and methods
 ~~~~~~~~~~~~~~~~~~~~~
@@ -84,7 +84,6 @@ Method and function arguments
 - Python's ``*args`` and ``**kwargs`` should be default names
   when just passing these values to some other method/function,
   unless you want to use these values in place, then name them explicitly
-- Keyword-only arguments must be separated from other arguments with ``*``
 
 Global (module level) variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,10 +102,8 @@ Type aliases
 
 - Must use ``UpperCase`` as real classes
 - Must not contain word ``type`` in its name
-- Generic types should be called ``TT`` or ``KT`` or ``VT``
-- Covariant and contravariant types
-  should be marked with ``Cov`` and ``Contra`` suffixes,
-  in this case, one letter can be dropped: ``TCov`` and ``KContra``
+- Generic types should be called clearly and properly,
+  not just ``TT`` or ``KT`` or ``VT``
 
 .. currentmodule:: wemake_python_styleguide.violations.naming
 
@@ -133,6 +130,8 @@ Summary
    UnusedVariableIsUsedViolation
    UnusedVariableIsDefinedViolation
    WrongUnusedVariableNameViolation
+   UnreadableNameViolation
+   BuiltinShadowingViolation
 
 Module names
 ------------
@@ -158,6 +157,8 @@ General names
 .. autoclass:: UnusedVariableIsUsedViolation
 .. autoclass:: UnusedVariableIsDefinedViolation
 .. autoclass:: WrongUnusedVariableNameViolation
+.. autoclass:: UnreadableNameViolation
+.. autoclass:: BuiltinShadowingViolation
 
 """
 
@@ -167,6 +168,7 @@ from wemake_python_styleguide.violations.base import (
     ASTViolation,
     MaybeASTViolation,
     SimpleViolation,
+    ViolationPostfixes,
 )
 
 
@@ -195,6 +197,9 @@ class WrongModuleNameViolation(SimpleViolation):
         # Wrong:
         utils.py
         helpers.py
+
+    See also:
+        https://tonsky.me/blog/utils/
 
     .. versionadded:: 0.1.0
 
@@ -288,7 +293,7 @@ class WrongVariableNameViolation(ASTViolation):
 
     See
     :py:data:`~wemake_python_styleguide.constants.VARIABLE_NAMES_BLACKLIST`
-    for the full list of blacklisted variable names.
+    for the base list of blacklisted variable names.
 
     Example::
 
@@ -297,6 +302,19 @@ class WrongVariableNameViolation(ASTViolation):
 
         # Wrong:
         item = None
+
+    Configuration:
+        This rule is configurable with ``--allowed-domain-names``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.ALLOWED_DOMAIN_NAMES`
+
+        And with ``--forbidden-domain-names``.
+        Default:
+        :str:`wemake_python_styleguide.options.defaults.FORBIDDEN_DOMAIN_NAMES`
+
+        The options listed above are used to create new variable names'
+        blacklist starting from
+        :py:data:`~wemake_python_styleguide.constants.VARIABLE_NAMES_BLACKLIST`.
 
     .. versionadded:: 0.1.0
 
@@ -346,6 +364,7 @@ class TooShortNameViolation(MaybeASTViolation):
 
     error_template = 'Found too short name: {0}'
     code = 111
+    postfix_template = ViolationPostfixes.less_than
 
 
 @final
@@ -375,6 +394,7 @@ class PrivateNameViolation(MaybeASTViolation):
 
     .. versionadded:: 0.1.0
     .. versionchanged:: 0.4.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -398,13 +418,20 @@ class SameAliasImportViolation(ASTViolation):
         # Wrong:
         from os import path as path
 
+    When `--i-control-code` is set to ``False``
+    you can reexport things with ``as``,
+    because ``mypy`` might require it
+    with ``implicit_reexport = False`` setting turned on.
+
     Configuration:
-        This rule is configurable with ``--i-control-code``.
+        This rule is configurable with ``--i-control-code``
+        and ``--i-dont-control-code``.
         Default:
         :str:`wemake_python_styleguide.options.defaults.I_CONTROL_CODE`
 
     .. versionadded:: 0.1.0
     .. versionchanged:: 0.13.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -445,7 +472,7 @@ class UnderscoredNumberNameViolation(MaybeASTViolation):
 
     """
 
-    error_template = 'Found underscored name pattern: {0}'
+    error_template = 'Found underscored number name pattern: {0}'
     code = 114
 
 
@@ -650,8 +677,11 @@ class UnusedVariableIsUsedViolation(ASTViolation):
     """
     Forbids to have use variables that are marked as unused.
 
-    We discourage using ``_`` at all and variables that start with ``_``
+    We discourage using variables that start with ``_``
     only inside functions and methods as local variables.
+
+    However, we allow to use ``_`` because tools like
+    ``ipython``, ``babel``, and ``django`` enforce it.
 
     Reasoning:
         Sometimes you start to use new logic in your functions,
@@ -663,6 +693,7 @@ class UnusedVariableIsUsedViolation(ASTViolation):
      Solution:
         Rename your variable to be a regular variable
         without a leading underscore.
+        This way it is declared to be used.
 
      Example::
 
@@ -680,6 +711,7 @@ class UnusedVariableIsUsedViolation(ASTViolation):
 
     .. versionadded:: 0.7.0
     .. versionchanged:: 0.12.0
+    .. versionchanged:: 0.14.0
 
     """
 
@@ -752,3 +784,79 @@ class WrongUnusedVariableNameViolation(ASTViolation):
 
     error_template = 'Found wrong unused variable name: {0}'
     code = 123
+
+
+@final
+class UnreadableNameViolation(MaybeASTViolation):
+    """
+    Forbids to have variable or module names which could be difficult to read.
+
+    Reasoning:
+        Currently one can name your classes like so: ``ZerO0``
+        Inside it is just ``O`` and ``0``, but we cannot tell it from the word.
+        There are a lot other combinations which are unreadable.
+
+    Solution:
+        Rename your entity not to contain unreadable sequences.
+
+    This rule checks: modules, variables, attributes,
+    functions, methods, and classes.
+
+    See
+    :py:data:`~wemake_python_styleguide.constants.UNREADABLE_CHARACTER_COMBINATIONS`
+    for full list of unreadable combinations.
+
+    Example::
+
+        # Correct:
+        ControlStatement
+        AveragePrice
+
+        # Wrong:
+        Memo0Output
+
+    .. versionadded:: 0.14
+
+    """
+
+    error_template = 'Found unreadable characters combination: {0}'
+    code = 124
+
+
+@final
+class BuiltinShadowingViolation(ASTViolation):
+    """
+    Forbids to have variable or module names which shadows builtin names.
+
+    Reasoning:
+        Your code simply breaks Python. After you create ``list = 1``,
+        you cannot not call ``builtin`` function ``list``
+        and what can be worse than that?
+
+    Solution:
+        Rename your entity to not shadow Python builtins.
+
+    Example::
+
+        # Correct:
+        my_list = list(some_other)
+
+        # Wrong:
+        str = ''
+        list = [1, 2, 3]
+
+    This can also cause problems when defining class attributes, for example::
+
+        class A:
+            min = 5
+            max = min(10, 20)  # TypeError: 'int' object is not callable
+
+    If you feel it is still necesarry to use such a class attribute,
+    consider using a `noqa` comment with caution.
+
+    .. versionadded:: 0.14
+
+    """
+
+    error_template = 'Found builtin shadowing: {0}'
+    code = 125

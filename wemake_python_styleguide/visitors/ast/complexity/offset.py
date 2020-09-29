@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from typing import ClassVar
 
@@ -60,5 +58,12 @@ class OffsetVisitor(BaseNodeVisitor):
 
     def _check_offset(self, node: ast.AST) -> None:
         offset = getattr(node, 'col_offset', 0)
-        if offset > self._max_offset_blocks * 4:
-            self.add_violation(TooDeepNestingViolation(node, text=str(offset)))
+        baseline = self._max_offset_blocks * 4
+        if offset > baseline:
+            self.add_violation(
+                TooDeepNestingViolation(
+                    node,
+                    text=str(offset),
+                    baseline=baseline,
+                ),
+            )

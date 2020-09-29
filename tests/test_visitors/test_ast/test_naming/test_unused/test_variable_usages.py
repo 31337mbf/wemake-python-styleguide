@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.naming import (
     UnusedVariableIsUsedViolation,
 )
 from wemake_python_styleguide.visitors.ast.naming import (
+    UnusedVariableUsageVisitor,
     WrongNameVisitor,
-    WrongVariableUsageVisitor,
 )
 
 annotation = 'some_var: {0}'
@@ -85,25 +83,34 @@ inheriting_variables = 'class ValidName({0}): ...'
     yielding_variable,
     inheriting_variables,
 ])
+@pytest.mark.parametrize('visitor_class', [
+    # We tests it here,
+    # since I am too lazy to refactor usage patterns to be a fixture.
+    WrongNameVisitor,
+
+    # Our real visitor.
+    UnusedVariableUsageVisitor,
+])
 def test_correct_variable_usage(
     assert_errors,
     parse_ast_tree,
     bad_name,
     code,
     default_options,
+    visitor_class,
 ):
     """Testing that any variable can used without raising violations."""
     tree = parse_ast_tree(code.format(bad_name))
 
-    visitor = WrongNameVisitor(default_options, tree=tree)
+    visitor = visitor_class(default_options, tree=tree)
     visitor.run()
 
     assert_errors(visitor, [])
 
 
 @pytest.mark.parametrize('bad_name', [
-    '_',
     '__',
+    '___',
 ])
 @pytest.mark.parametrize('code', [
     annotation,
@@ -133,7 +140,44 @@ def test_wrong_variable_usage(
     """Testing that any variable cannot be used if it is marked as unused."""
     tree = parse_ast_tree(code.format(bad_name))
 
-    visitor = WrongVariableUsageVisitor(default_options, tree=tree)
+    visitor = UnusedVariableUsageVisitor(default_options, tree=tree)
     visitor.run()
 
     assert_errors(visitor, [UnusedVariableIsUsedViolation])
+
+
+@pytest.mark.parametrize('bad_name', [
+    '_',  # we are forced to allow this name, because django uses it a lot.
+])
+@pytest.mark.parametrize('code', [
+    annotation,
+    annotation_value,
+    assigned,
+    assigned_attribute,
+    calling_function,
+    calling_star_function,
+    called_function,
+    calling_method,
+    accessed_attribute,
+    key_access,
+    list_definition,
+    raising_variable,
+    returning_variable,
+    awaiting_variable,
+    yielding_variable,
+    inheriting_variables,
+])
+def test_unused_special_case(
+    assert_errors,
+    parse_ast_tree,
+    bad_name,
+    code,
+    default_options,
+):
+    """Testing that any variable cannot be used if it is marked as unused."""
+    tree = parse_ast_tree(code.format(bad_name))
+
+    visitor = UnusedVariableUsageVisitor(default_options, tree=tree)
+    visitor.run()
+
+    assert_errors(visitor, [])

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ast
 
 from wemake_python_styleguide.logic.nodes import get_parent
@@ -29,7 +27,7 @@ def fix_async_offset(tree: ast.AST) -> ast.AST:
     )
     for node in ast.walk(tree):
         if isinstance(node, nodes_to_fix):
-            error = 6 if node.col_offset % 4 != 0 else 0
+            error = 6 if node.col_offset % 4 else 0
             node.col_offset = node.col_offset - error
     return tree
 

@@ -1,9 +1,7 @@
-#!/usr/bin/env perl
 from sys import *
 import sys
 from typing import List, Union, Dict
 
-int = 12
 ++int
 
 extra_parens = list((node for node in 'abc'))
@@ -15,15 +13,9 @@ breaking_pycodestyle=3
 def camelCase(): ...
 
 '{}'.format(1)
-""
-'%s' % 'test'
 
 assert True
 ipdb.set_trace()
-
-logger.info(
-    'Hello {world}'.format(world='Earth')
-)
 
 
 def function_name(plugin: str ='flake8') ->str:
@@ -36,17 +28,13 @@ string'
 
 '\''
 
-print('test')
 
+def darglint_check(arg):
+    """
+    Used to trigger DAR101.
 
-def complex_annotation(
-    first: List[Union[List[str], Dict[str, Dict[str, str]]]],
-):
-    ...
+    Returns:
+        Just a value to trigger the check.
 
-
-def radon_check(for_data):
-    for first in for_data:
-        for second in for_data:
-            for third in for_data:
-                assert first == second == third
+    """
+    return 'check trigger'

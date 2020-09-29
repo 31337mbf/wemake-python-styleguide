@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.consistency import (
@@ -26,6 +24,7 @@ usage_template = 'constant {0}'
     '/= -0o0',
     '/= 0e0',
     '/= -0e0',
+    '//= 0',
 
     '/ 0',
     '/ 0.0',
@@ -39,6 +38,7 @@ usage_template = 'constant {0}'
     '/ -0o0',
     '/ 0e0',
     '/ -0e0',
+    '// 0',
 
     '* other / 0',
     '/ 0 * other',
@@ -59,6 +59,7 @@ def test_zero_div(
 
 
 @pytest.mark.parametrize('expression', [
+    # Math ops:
     '*= 0',
     '**= -0.0',
     '+= 0e0',
@@ -82,6 +83,19 @@ def test_zero_div(
 
     '* other / 1.0',
     '* 1 * other',
+
+    # Boolean ops:
+    '>> 0',
+    '<< 0',
+    '| 0b0',
+    '^ 0x0',
+    '& -0o0',
+
+    '>>= 0',
+    '<<= 0',
+    '|= 0b0',
+    '^= 0x0',
+    '&= -0o0',
 ])
 def test_meaningless_math(
     assert_errors,
@@ -106,6 +120,7 @@ def test_meaningless_math(
     '/= -100.0',
     '/= 0b101',
     '/= -1e0',
+    '//= 9',
 
     '/ 10',
     '/ 0.01',
@@ -139,6 +154,7 @@ def test_correct_zero_div(
 
 
 @pytest.mark.parametrize('expression', [
+    # Math ops:
     '*= -1',
     '*= 10',
     '+= 1e2',
@@ -154,6 +170,19 @@ def test_correct_zero_div(
 
     '* other / 1.5',
     '* -1 * other',
+
+    # Boolean ops:
+    '>> 10',
+    '<< 1',
+    '| 0b1',
+    '^ 2',
+    '& -1',
+
+    '>>= 10',
+    '<<= 1',
+    '|= 0b1',
+    '^= 0x1',
+    '&= -0o1',
 ])
 def test_useful_math(
     assert_errors,
@@ -175,6 +204,7 @@ def test_useful_math(
     '1 / 11',
     '1 / 1.1',
     '1.0 / number',
+    '2 // other',
 ])
 def test_one_to_divide(
     assert_errors,
@@ -196,6 +226,7 @@ def test_one_to_divide(
     '2 / 1',
     '3.3 / 1',
     'other / 1',
+    'other // 1',
 ])
 def test_divide_by_one(
     assert_errors,

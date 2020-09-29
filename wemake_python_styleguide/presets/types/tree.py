@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 from typing_extensions import Final
 
 from wemake_python_styleguide.presets.topics import complexity
-from wemake_python_styleguide.visitors.ast import (
+from wemake_python_styleguide.visitors.ast import (  # noqa: WPS235
     annotations,
     attributes,
     blocks,
@@ -14,6 +12,7 @@ from wemake_python_styleguide.visitors.ast import (
     exceptions,
     functions,
     imports,
+    iterables,
     keywords,
     loops,
     modules,
@@ -31,6 +30,7 @@ PRESET: Final = (
     statements.PointlessStarredVisitor,
     statements.WrongNamedKeywordVisitor,
     statements.AssignmentPatternsVisitor,
+    statements.WrongMethodArgumentsVisitor,
 
     keywords.WrongRaiseVisitor,
     keywords.WrongKeywordVisitor,
@@ -38,30 +38,34 @@ PRESET: Final = (
     keywords.ConsistentReturningVisitor,
     keywords.ConsistentReturningVariableVisitor,
     keywords.ConstantKeywordVisitor,
+    keywords.GeneratorKeywordsVisitor,
 
     loops.WrongComprehensionVisitor,
     loops.WrongLoopVisitor,
     loops.WrongLoopDefinitionVisitor,
+    loops.SyncForLoopVisitor,
 
     attributes.WrongAttributeVisitor,
     annotations.WrongAnnotationVisitor,
-    annotations.SemanticAnnotationVisitor,
 
     functions.WrongFunctionCallVisitor,
     functions.FunctionDefinitionVisitor,
     functions.UselessLambdaDefinitionVisitor,
     functions.WrongFunctionCallContextVisitior,
     functions.UnnecessaryLiteralsVisitor,
+    functions.PositionalOnlyArgumentsVisitor,
 
     exceptions.WrongTryExceptVisitor,
     exceptions.NestedTryBlocksVisitor,
+    exceptions.WrongExceptHandlerVisitor,
 
     imports.WrongImportVisitor,
 
     naming.WrongNameVisitor,
     naming.WrongModuleMetadataVisitor,
     naming.WrongVariableAssignmentVisitor,
-    naming.WrongVariableUsageVisitor,
+    naming.UnusedVariableUsageVisitor,
+    naming.UnusedVaribaleDefinitionVisitor,
 
     builtins.WrongNumberVisitor,
     builtins.WrongStringVisitor,
@@ -70,10 +74,11 @@ PRESET: Final = (
 
     operators.UselessOperatorsVisitor,
     operators.WrongMathOperatorVisitor,
+    operators.WalrusVisitor,
 
     compares.WrongConditionalVisitor,
     compares.CompareSanityVisitor,
-    compares.WrongComparisionOrderVisitor,
+    compares.WrongComparisonOrderVisitor,
     compares.UnaryCompareVisitor,
     compares.WrongConstantCompareVisitor,
     compares.InCompareSanityVisitor,
@@ -81,6 +86,8 @@ PRESET: Final = (
     conditions.IfStatementVisitor,
     conditions.BooleanConditionVisitor,
     conditions.ImplicitBoolPatternsVisitor,
+
+    iterables.IterableUnpackingVisitor,
 
     # Classes:
     classes.WrongClassVisitor,
@@ -98,9 +105,10 @@ PRESET: Final = (
     blocks.BlockVariableVisitor,
     blocks.AfterBlockVariablesVisitor,
 
+    subscripts.SubscriptVisitor,
+    subscripts.ImplicitDictGetVisitor,
+    subscripts.CorrectKeyVisitor,
+
     # Complexity:
     *complexity.PRESET,
-
-    # Subscripts:
-    subscripts.SubscriptVisitor,
 )

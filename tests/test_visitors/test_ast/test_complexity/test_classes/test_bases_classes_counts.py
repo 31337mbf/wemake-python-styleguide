@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from wemake_python_styleguide.violations.complexity import (
@@ -77,7 +75,7 @@ def test_bad_number_default_option(
     visitor.run()
 
     assert_errors(visitor, [TooManyBaseClassesViolation])
-    assert_error_text(visitor, '5')
+    assert_error_text(visitor, '5', default_options.max_base_classes)
 
 
 @pytest.mark.parametrize('code', [

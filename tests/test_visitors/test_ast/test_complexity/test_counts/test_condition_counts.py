@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
+from wemake_python_styleguide.violations.complexity import (
+    TooManyConditionsViolation,
+)
 from wemake_python_styleguide.visitors.ast.complexity.counts import (
     ConditionsVisitor,
-    TooManyConditionsViolation,
 )
 
 empty_module = ''
@@ -90,35 +90,6 @@ def test_module_condition_counts_normal(
 
 
 @pytest.mark.parametrize('code', [
-    assignment,
-    condition_with_single_if,
-    condition_with_single_if_multiline,
-    condition_with_several_ifs,
-    condition_with_several_elifs,
-    condition_inline,
-    condition_with_inline_for,
-    while_with_condition,
-])
-def test_module_condition_counts_violation(
-    monkeypatch,
-    assert_errors,
-    assert_error_text,
-    parse_ast_tree,
-    code,
-    default_options,
-):
-    """Testing that violations are raised when reaching max value."""
-    tree = parse_ast_tree(code)
-
-    monkeypatch.setattr(ConditionsVisitor, '_max_conditions', 1)
-    visitor = ConditionsVisitor(default_options, tree=tree)
-    visitor.run()
-
-    assert_errors(visitor, [TooManyConditionsViolation])
-    assert_error_text(visitor, '2')
-
-
-@pytest.mark.parametrize('code', [
     complex_assignment,
     complex_condition,
     complex_while,
@@ -137,4 +108,4 @@ def test_module_condition_real_config(
     visitor.run()
 
     assert_errors(visitor, [TooManyConditionsViolation])
-    assert_error_text(visitor, '5')
+    assert_error_text(visitor, '5', baseline=4)
